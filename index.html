@@ -52,13 +52,9 @@
     }
 
     .top {
-      position: sticky;
-      top: 0;
-      z-index: 5;
       margin: 0 -14px 16px;
       padding: 14px 14px 16px;
-      background: rgba(255, 247, 237, 0.96);
-      backdrop-filter: blur(14px);
+      background: transparent;
       border-bottom: 2px solid rgba(180, 83, 9, 0.22);
     }
 
@@ -130,6 +126,44 @@
       background: var(--saddle);
       color: white;
       border-color: var(--saddle);
+    }
+
+    .plan-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .plan-button,
+    .meal-shuffle,
+    .choose-alt {
+      min-height: 60px;
+      border: 0;
+      border-radius: 18px;
+      font: 900 18px/1.15 "Noto Sans Devanagari", "Inter", sans-serif;
+      cursor: pointer;
+    }
+
+    .plan-button.primary,
+    .meal-shuffle,
+    .choose-alt {
+      background: var(--saddle);
+      color: white;
+    }
+
+    .plan-button.secondary {
+      background: #fff;
+      color: var(--saddle);
+      border: 3px solid var(--saddle);
+    }
+
+    .shuffle-status {
+      margin: 8px 2px 0;
+      color: var(--saddle);
+      font-size: 16px;
+      font-weight: 850;
+      min-height: 22px;
     }
 
     .section-title {
@@ -345,10 +379,16 @@
       font-weight: 780;
     }
 
+    .meal-action-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
     .alt-toggle {
       width: 100%;
       min-height: 62px;
-      margin-top: 12px;
       border: 0;
       border-radius: 18px;
       background: var(--saddle);
@@ -357,7 +397,15 @@
       cursor: pointer;
     }
 
+    .meal-shuffle {
+      background: #f59e0b;
+      color: #431407;
+    }
+
     .alt-toggle:focus-visible,
+    .meal-shuffle:focus-visible,
+    .plan-button:focus-visible,
+    .choose-alt:focus-visible,
     summary:focus-visible,
     .quick-nav a:focus-visible {
       outline: 5px solid #f59e0b;
@@ -382,23 +430,54 @@
       font-weight: 950;
     }
 
+    .alt-help {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.35;
+      font-weight: 760;
+    }
+
     .alt-list {
       display: grid;
-      gap: 8px;
+      gap: 12px;
       margin: 0;
       padding: 0;
       list-style: none;
     }
 
     .alt-list li {
-      padding: 11px 12px;
-      border-radius: 14px;
-      background: white;
-      border: 1px solid #fed7aa;
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
+      border: 0;
       color: var(--ink);
       font-size: 19px;
       line-height: 1.25;
       font-weight: 700;
+    }
+
+    .alt-card {
+      display: grid;
+      gap: 10px;
+      padding: 13px;
+      border-radius: 16px;
+      background: #fff;
+      border: 2px solid #fed7aa;
+    }
+
+    .alt-card-title {
+      color: var(--saddle);
+      font-size: 21px;
+      font-weight: 950;
+      line-height: 1.2;
+    }
+
+    .alt-card-note {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.3;
+      font-weight: 760;
     }
 
     .protein-grid {
@@ -506,6 +585,8 @@
       .app { padding: 24px 22px 56px; }
       .top { margin: 0 -22px 20px; padding: 18px 22px; }
       .portion-row { grid-template-columns: 1fr 1fr; }
+      .plan-actions { grid-template-columns: 1fr 1fr; }
+      .meal-action-row { grid-template-columns: 1fr 1fr; }
       .protein-grid { grid-template-columns: 1fr 1fr; }
       .meal { padding: 18px; }
     }
@@ -532,7 +613,12 @@
         <p class="eyebrow">आज का खाना</p>
         <h1 id="todayDay">आज</h1>
         <p class="date" id="todayDate">तारीख</p>
-        <p class="hint">नीचे आज वाला दिन सबसे पहले खुलेगा। हर meal में “विकल्प देखें” दबाकर दूसरी चीज़ चुन सकते हैं।</p>
+        <p class="hint">नीचे आज वाला दिन सबसे पहले खुलेगा। “विकल्प” का मतलब है: इनमें से कोई एक चीज़ चुनें, साथ में सब नहीं खाना है। चुना हुआ भोजन पूरे हफ्ते वही रहेगा, जब तक आप खुद “बदलें” नहीं दबाते।</p>
+        <div class="plan-actions" aria-label="Plan actions">
+          <button class="plan-button primary" type="button" id="shuffleWeek">इस हफ्ते नया भोजन बनाएं</button>
+          <button class="plan-button secondary" type="button" id="resetPlan">मूल भोजन वापस लाएं</button>
+        </div>
+        <p class="shuffle-status" id="shuffleStatus" aria-live="polite"></p>
         <nav class="quick-nav" id="quickNav" aria-label="दिन चुनें"></nav>
       </section>
     </header>
@@ -540,8 +626,8 @@
     <h2 class="section-title">इस हफ्ते का भोजन</h2>
     <section class="day-list" id="dayList" aria-label="साप्ताहिक भोजन प्लान"></section>
 
-    <h2 class="section-title">Protein के विकल्प और portion</h2>
-    <section class="protein-grid" id="proteinGrid" aria-label="Protein options"></section>
+    <h2 class="section-title">प्रोटीन के विकल्प और मात्रा</h2>
+    <section class="protein-grid" id="proteinGrid" aria-label="प्रोटीन विकल्प"></section>
 
     <details class="rules">
       <summary>
@@ -557,10 +643,10 @@
           </ul>
         </div>
         <div class="rule-block">
-          <h3>Protein का संतुलन</h3>
+          <h3>प्रोटीन का संतुलन</h3>
           <ul>
-            <li>Sandhya को muscle strength के लिए हर meal में थोड़ा protein चाहिए।</li>
-            <li>Arun के लिए protein measured रहे: एक meal में दाल या egg या paneer या chicken/fish, सब साथ में नहीं।</li>
+            <li>Sandhya को ताकत बनाए रखने के लिए दिन में 2-3 बार थोड़ा प्रोटीन चाहिए।</li>
+            <li>Arun के लिए प्रोटीन नापकर रखें: एक समय पर दाल या अंडा या paneer या chicken/fish, सब साथ में नहीं।</li>
             <li>Chicken/fish रोज़ नहीं; हर 2-3 दिन में एक बार काफी है।</li>
           </ul>
         </div>
@@ -576,7 +662,7 @@
           <h3>Kidney labs</h3>
           <ul>
             <li>Arun की eGFR, creatinine trend, potassium, phosphorus और urine albumin रिपोर्ट के हिसाब से diet बदल सकती है।</li>
-            <li>Protein powder या supplements doctor/dietitian के बिना न दें।</li>
+            <li>प्रोटीन powder या supplements doctor/dietitian के बिना न दें।</li>
           </ul>
         </div>
       </div>
@@ -592,26 +678,26 @@
         jsDay: 1,
         hi: "सोमवार",
         short: "सोम",
-        note: "Vegetarian + egg option",
+        note: "शाकाहारी खाना; अंडा सिर्फ जरूरत हो तो",
         badge: "veg",
         meals: [
           {
             icon: "🌅",
             name: "नाश्ता",
             time: "8:00 AM",
-            dish: "बेसन चीला + थोड़ा दही",
-            sandhya: "2 छोटे चीले + 1/2 कटोरी दही। जरूरत हो तो 1 egg white extra।",
-            arun: "1-2 छोटे चीले + 2-3 चम्मच दही। नमक कम।",
-            alternatives: ["मूंग दाल चीला", "Egg bhurji + 1 छोटी फुल्का", "वेज दलिया, बिना चीनी"]
+            dish: "बेसन चीला और थोड़ा दही",
+            sandhya: "2 छोटे चीले और 1/2 कटोरी दही। अगर भूख रह जाए तो 1 egg white अलग से ले सकती हैं।",
+            arun: "1-2 छोटे चीले और 2-3 चम्मच दही। नमक कम रखें।",
+            alternatives: ["मूंग दाल चीला", "Egg bhurji और 1 छोटी फुल्का", "वेज दलिया, बिना चीनी"]
           },
           {
             icon: "☀️",
             name: "दोपहर",
             time: "1:00 PM",
-            dish: "लौकी चना दाल + छोटी फुल्का + सलाद",
-            sandhya: "दाल 1 कटोरी + 2 छोटी फुल्का + सब्जी/सलाद।",
-            arun: "दाल 1/2 कटोरी + 1-2 छोटी फुल्का + ज्यादा सब्जी।",
-            alternatives: ["मूंग दाल + तोरी", "मसूर दाल + पत्ता गोभी", "अरहर दाल + भिंडी"]
+            dish: "लौकी चना दाल, छोटी फुल्का और सलाद",
+            sandhya: "1 कटोरी दाल, 2 छोटी फुल्का, और सलाद/सब्जी।",
+            arun: "1/2 कटोरी दाल, 1-2 छोटी फुल्का, और सब्जी की मात्रा ज्यादा रखें।",
+            alternatives: ["मूंग दाल और तोरी", "मसूर दाल और पत्ता गोभी", "अरहर दाल और भिंडी"]
           },
           {
             icon: "☕",
@@ -626,10 +712,10 @@
             icon: "🌙",
             name: "रात",
             time: "8:00 PM",
-            dish: "भिंडी + फुल्का + हल्की egg bhurji",
-            sandhya: "1 whole egg + 1 egg white + 1-2 फुल्का + भिंडी।",
-            arun: "1 egg या 2 egg whites + 1 फुल्का + भिंडी। दाल/दही extra नहीं।",
-            alternatives: ["Beans + egg", "Cabbage + egg", "Paneer छोटा portion अगर egg न हो"]
+            dish: "भिंडी, फुल्का और हल्की egg bhurji",
+            sandhya: "1 पूरा अंडा, 1 egg white, 1-2 फुल्का और भिंडी।",
+            arun: "1 अंडा या 2 egg whites, 1 फुल्का और भिंडी। इस खाने में अलग से दाल/दही नहीं।",
+            alternatives: ["Beans और egg", "Cabbage और egg", "Egg न हो तो थोड़ा paneer"]
           }
         ]
       },
@@ -638,7 +724,7 @@
         jsDay: 2,
         hi: "मंगलवार",
         short: "मंगल",
-        note: "Chicken/fish day हो सकता है",
+        note: "रात में chicken/fish रख सकते हैं",
         badge: "nonveg",
         meals: [
           {
@@ -646,17 +732,17 @@
             name: "नाश्ता",
             time: "8:00 AM",
             dish: "वेज दलिया या सब्जी वाला पोहा",
-            sandhya: "1 कटोरी + extra सब्जी। Protein कम लगे तो 1 boiled egg।",
-            arun: "3/4 कटोरी, मूंगफली कम, नमक कम।",
-            alternatives: ["दही + छोटी फुल्का", "बेसन चीला", "उबला egg + फुल्का"]
+            sandhya: "1 कटोरी दलिया/पोहा। सब्जी अलग से नहीं; उसी में मटर कम, गाजर/बीन्स/प्याज थोड़े ज्यादा डालें। जरूरत हो तो 1 उबला अंडा अलग से।",
+            arun: "3/4 कटोरी दलिया/पोहा। मूंगफली कम और नमक कम। अंडा नाश्ते में न दें अगर रात को chicken/fish है।",
+            alternatives: ["दही और 1 छोटी फुल्का", "बेसन चीला", "उबला अंडा और 1 छोटी फुल्का"]
           },
           {
             icon: "☀️",
             name: "दोपहर",
             time: "1:00 PM",
-            dish: "गोभी/बीन्स सब्जी + फुल्का + थोड़ा दही",
-            sandhya: "2 फुल्का + 1/2 कटोरी दही + सब्जी।",
-            arun: "1-2 फुल्का + 1/3 कटोरी दही + ज्यादा सब्जी।",
+            dish: "गोभी/बीन्स सब्जी, फुल्का और थोड़ा दही",
+            sandhya: "2 छोटी फुल्का, 1/2 कटोरी दही और गोभी/बीन्स की सब्जी।",
+            arun: "1-2 छोटी फुल्का, 1/3 कटोरी दही और सब्जी की मात्रा ज्यादा रखें।",
             alternatives: ["बैंगन भरता", "लौकी सब्जी", "टिंडा सब्जी"]
           },
           {
@@ -672,9 +758,9 @@
             icon: "🌙",
             name: "रात",
             time: "8:00 PM",
-            dish: "Chicken curry + लौकी/तोरी + 1 फुल्का",
-            sandhya: "Cooked chicken 70-75 g + 1-2 फुल्का + सब्जी।",
-            arun: "Cooked chicken 50-60 g + 1 फुल्का। इस meal में दाल/curd extra नहीं।",
+            dish: "Chicken curry, लौकी/तोरी और 1 फुल्का",
+            sandhya: "Chicken 70-75 g cooked, 1-2 छोटी फुल्का और लौकी/तोरी।",
+            arun: "Chicken 50-60 g cooked और 1 छोटी फुल्का। इस खाने में अलग से दाल/दही नहीं।",
             alternatives: ["Fish curry", "Egg curry", "Non-veg न हो तो मसूर दाल"]
           }
         ]
@@ -684,7 +770,7 @@
         jsDay: 3,
         hi: "बुधवार",
         short: "बुध",
-        note: "Vegetarian protein day",
+        note: "दाल/पनीर वाला शाकाहारी दिन",
         badge: "veg",
         meals: [
           {
@@ -692,18 +778,18 @@
             name: "नाश्ता",
             time: "8:00 AM",
             dish: "मूंग दाल चीला",
-            sandhya: "2 छोटे चीले + 2-3 चम्मच दही।",
-            arun: "1-2 छोटे चीले, नमक कम, दही बहुत थोड़ा।",
-            alternatives: ["बेसन चीला", "Egg bhurji", "दही + छोटी रोटी"]
+            sandhya: "2 छोटे चीले और 2-3 चम्मच दही।",
+            arun: "1-2 छोटे चीले। नमक कम; दही बहुत थोड़ा।",
+            alternatives: ["बेसन चीला", "Egg bhurji", "दही और छोटी रोटी"]
           },
           {
             icon: "☀️",
             name: "दोपहर",
             time: "1:00 PM",
-            dish: "मूंग/मसूर दाल + पत्ता गोभी/बीन्स + फुल्का",
-            sandhya: "दाल 1 कटोरी + 2 फुल्का + सब्जी।",
-            arun: "दाल 1/2 कटोरी + 1-2 फुल्का + ज्यादा सब्जी।",
-            alternatives: ["लौकी दाल", "हल्की तड़का दाल", "Mixed veg + छोटी दाल"]
+            dish: "मूंग/मसूर दाल, पत्ता गोभी/बीन्स और फुल्का",
+            sandhya: "1 कटोरी दाल, 2 छोटी फुल्का और पत्ता गोभी/बीन्स।",
+            arun: "1/2 कटोरी दाल, 1-2 छोटी फुल्का और सब्जी की मात्रा ज्यादा रखें।",
+            alternatives: ["लौकी दाल", "हल्की तड़का दाल", "Mixed veg और छोटी दाल"]
           },
           {
             icon: "☕",
@@ -718,9 +804,9 @@
             icon: "🌙",
             name: "रात",
             time: "8:00 PM",
-            dish: "हल्का पालक पनीर + फुल्का",
-            sandhya: "Paneer 50-60 g + 1-2 फुल्का।",
-            arun: "Paneer 30-40 g + 1 फुल्का। दाल साथ में full bowl नहीं।",
+            dish: "हल्का पालक पनीर और फुल्का",
+            sandhya: "Paneer 50-60 g और 1-2 फुल्का।",
+            arun: "Paneer 30-40 g और 1 फुल्का। साथ में दाल की पूरी कटोरी नहीं।",
             alternatives: ["लौकी पनीर", "Egg bhurji", "Paneer न हो तो 1/2 कटोरी दाल"]
           }
         ]
@@ -730,25 +816,25 @@
         jsDay: 4,
         hi: "गुरुवार",
         short: "गुरु",
-        note: "Fish/chicken day हो सकता है",
+        note: "रात में fish/chicken रख सकते हैं",
         badge: "nonveg",
         meals: [
           {
             icon: "🌅",
             name: "नाश्ता",
             time: "8:00 AM",
-            dish: "दही + छोटी मेथी रोटी",
-            sandhya: "1 छोटी मेथी रोटी + 1/2 कटोरी दही।",
-            arun: "1 छोटी मेथी रोटी + 1/3 कटोरी दही, नमक कम।",
+            dish: "दही और छोटी मेथी रोटी",
+            sandhya: "1 छोटी मेथी रोटी और 1/2 कटोरी दही।",
+            arun: "1 छोटी मेथी रोटी और 1/3 कटोरी दही। नमक कम।",
             alternatives: ["सब्जी पोहा", "वेज दलिया", "मूंग चीला"]
           },
           {
             icon: "☀️",
             name: "दोपहर",
             time: "1:00 PM",
-            dish: "लौकी/तुरई + फुल्का + छोटी कटोरी दाल",
-            sandhya: "दाल 3/4-1 कटोरी + 2 फुल्का + सब्जी।",
-            arun: "दाल 1/2 कटोरी + 1-2 फुल्का + ज्यादा सब्जी।",
+            dish: "लौकी/तुरई, फुल्का और छोटी कटोरी दाल",
+            sandhya: "3/4 से 1 कटोरी दाल, 2 छोटी फुल्का और लौकी/तुरई।",
+            arun: "1/2 कटोरी दाल, 1-2 छोटी फुल्का और सब्जी की मात्रा ज्यादा रखें।",
             alternatives: ["टिंडा", "भिंडी", "पत्ता गोभी"]
           },
           {
@@ -764,9 +850,9 @@
             icon: "🌙",
             name: "रात",
             time: "8:00 PM",
-            dish: "Fish curry + टिंडा/लौकी + फुल्का",
-            sandhya: "Cooked fish 70-75 g + 1-2 फुल्का + सब्जी।",
-            arun: "Cooked fish 50-60 g + 1 फुल्का। दाल/पनीर extra नहीं।",
+            dish: "Fish curry, टिंडा/लौकी और फुल्का",
+            sandhya: "Fish 70-75 g cooked, 1-2 छोटी फुल्का और टिंडा/लौकी।",
+            arun: "Fish 50-60 g cooked और 1 छोटी फुल्का। इस खाने में अलग से दाल/पनीर नहीं।",
             alternatives: ["Chicken curry", "Egg curry", "Non-veg न हो तो मसूर दाल"]
           }
         ]
@@ -776,7 +862,7 @@
         jsDay: 5,
         hi: "शुक्रवार",
         short: "शुक्र",
-        note: "Simple vegetarian day",
+        note: "सरल शाकाहारी दिन",
         badge: "veg",
         meals: [
           {
@@ -784,35 +870,35 @@
             name: "नाश्ता",
             time: "8:00 AM",
             dish: "बेसन या मूंग चीला",
-            sandhya: "2 छोटे चीले + थोड़ा दही।",
+            sandhya: "2 छोटे चीले और थोड़ा दही।",
             arun: "1-2 छोटे चीले, नमक कम।",
-            alternatives: ["दही-रोटी", "वेज दलिया", "Boiled egg + फुल्का"]
+            alternatives: ["दही-रोटी", "वेज दलिया", "उबला अंडा और फुल्का"]
           },
           {
             icon: "☀️",
             name: "दोपहर",
             time: "1:00 PM",
-            dish: "बैंगन भरता या भिंडी + फुल्का + थोड़ा curd",
-            sandhya: "2 फुल्का + 1/2 कटोरी curd + सब्जी।",
-            arun: "1-2 फुल्का + 1/3 कटोरी curd। दही ज्यादा नहीं।",
+            dish: "बैंगन भरता या भिंडी, फुल्का और थोड़ा दही",
+            sandhya: "2 छोटी फुल्का, 1/2 कटोरी दही और बैंगन/भिंडी।",
+            arun: "1-2 छोटी फुल्का, 1/3 कटोरी दही और बैंगन/भिंडी। दही ज्यादा नहीं।",
             alternatives: ["लौकी", "बीन्स", "पत्ता गोभी"]
           },
           {
             icon: "☕",
             name: "शाम",
             time: "5:00 PM",
-            dish: "चाय + थोड़े unsalted peanuts",
-            sandhya: "चाय बिना चीनी + 8-10 peanuts।",
-            arun: "चाय बिना चीनी + 5-6 peanuts।",
+            dish: "चाय और थोड़ी बिना नमक मूंगफली",
+            sandhya: "बिना चीनी चाय और 8-10 दाने मूंगफली।",
+            arun: "बिना चीनी चाय और 5-6 दाने मूंगफली।",
             alternatives: ["मखाना", "छोटा फल", "भुना चना"]
           },
           {
             icon: "🌙",
             name: "रात",
             time: "8:00 PM",
-            dish: "मसूर दाल + cabbage/beans + फुल्का",
-            sandhya: "दाल 1 कटोरी + 1-2 फुल्का + सब्जी।",
-            arun: "दाल 1/2 कटोरी + 1 फुल्का + ज्यादा सब्जी।",
+            dish: "मसूर दाल, cabbage/beans और फुल्का",
+            sandhya: "1 कटोरी दाल, 1-2 छोटी फुल्का और cabbage/beans।",
+            arun: "1/2 कटोरी दाल, 1 छोटी फुल्का और सब्जी की मात्रा ज्यादा रखें।",
             alternatives: ["मूंग दाल", "अरहर दाल", "Egg bhurji"]
           }
         ]
@@ -822,7 +908,7 @@
         jsDay: 6,
         hi: "शनिवार",
         short: "शनि",
-        note: "Light protein day",
+        note: "हल्का प्रोटीन दिन",
         badge: "veg",
         meals: [
           {
@@ -830,18 +916,18 @@
             name: "नाश्ता",
             time: "8:00 AM",
             dish: "Egg bhurji या दही-रोटी",
-            sandhya: "1 egg + 1 white या 1 छोटी रोटी + 1/2 कटोरी दही।",
-            arun: "1 egg या 2 whites; अगर दही-रोटी हो तो दही 1/3 कटोरी।",
+            sandhya: "अगर egg लें: 1 अंडा और 1 egg white। अगर दही-रोटी लें: 1 छोटी रोटी और 1/2 कटोरी दही।",
+            arun: "अगर egg लें: 1 अंडा या 2 egg whites। अगर दही-रोटी लें: 1 छोटी रोटी और 1/3 कटोरी दही।",
             alternatives: ["बेसन चीला", "पोहा", "वेज दलिया"]
           },
           {
             icon: "☀️",
             name: "दोपहर",
             time: "1:00 PM",
-            dish: "कढ़ी कम नमक + लौकी/तोरी + फुल्का",
-            sandhya: "कढ़ी 1 कटोरी + 1-2 फुल्का + सब्जी।",
-            arun: "कढ़ी 1/2 कटोरी + 1 फुल्का। दाल साथ में full quantity नहीं।",
-            alternatives: ["दाल + सब्जी", "Curd + सब्जी", "Mixed veg"]
+            dish: "कम नमक वाली कढ़ी, लौकी/तोरी और फुल्का",
+            sandhya: "1 कटोरी कढ़ी, 1-2 छोटी फुल्का और लौकी/तोरी।",
+            arun: "1/2 कटोरी कढ़ी और 1 छोटी फुल्का। साथ में दाल की पूरी कटोरी नहीं।",
+            alternatives: ["दाल और सब्जी", "दही और सब्जी", "Mixed veg"]
           },
           {
             icon: "☕",
@@ -856,10 +942,10 @@
             icon: "🌙",
             name: "रात",
             time: "8:00 PM",
-            dish: "सब्जी + फुल्का + मूंग दाल",
-            sandhya: "मूंग दाल 1 कटोरी + 1-2 फुल्का।",
-            arun: "मूंग दाल 1/2 कटोरी + 1 फुल्का।",
-            alternatives: ["Egg curry", "छोटा paneer portion", "लौकी दाल"]
+            dish: "सब्जी, फुल्का और मूंग दाल",
+            sandhya: "1 कटोरी मूंग दाल, 1-2 छोटी फुल्का और सब्जी।",
+            arun: "1/2 कटोरी मूंग दाल, 1 छोटी फुल्का और सब्जी।",
+            alternatives: ["Egg curry", "थोड़ा paneer", "लौकी दाल"]
           }
         ]
       },
@@ -868,25 +954,25 @@
         jsDay: 0,
         hi: "रविवार",
         short: "रवि",
-        note: "Non-veg optional",
+        note: "नॉन-वेज सिर्फ विकल्प है",
         badge: "nonveg",
         meals: [
           {
             icon: "🌅",
             name: "नाश्ता",
             time: "8:30 AM",
-            dish: "पोहा ज्यादा सब्जियों के साथ",
-            sandhya: "1 कटोरी पोहा + सब्जी ज्यादा। जरूरत हो तो 1 boiled egg।",
-            arun: "3/4 कटोरी पोहा, मूंगफली कम, नमक कम।",
-            alternatives: ["चीला", "दही-रोटी", "Egg + फुल्का"]
+            dish: "सब्जी वाला पोहा",
+            sandhya: "1 कटोरी पोहा। सब्जी अलग से नहीं; पोहे में ही प्याज/गाजर/बीन्स थोड़े ज्यादा डालें। जरूरत हो तो 1 उबला अंडा अलग से।",
+            arun: "3/4 कटोरी पोहा। मूंगफली कम और नमक कम।",
+            alternatives: ["चीला", "दही-रोटी", "Egg और फुल्का"]
           },
           {
             icon: "☀️",
             name: "दोपहर",
             time: "1:30 PM",
-            dish: "Chicken/fish optional या चना दाल + भिंडी/लौकी + फुल्का",
-            sandhya: "Non-veg हो तो 70-75 g cooked; vegetarian हो तो दाल 1 कटोरी।",
-            arun: "Non-veg हो तो 50-60 g cooked; vegetarian हो तो दाल 1/2 कटोरी।",
+            dish: "Chicken/fish या चना दाल, भिंडी/लौकी और फुल्का",
+            sandhya: "अगर non-veg बना है: 70-75 g cooked। अगर vegetarian है: 1 कटोरी दाल। साथ में फुल्का और सब्जी।",
+            arun: "अगर non-veg बना है: 50-60 g cooked। अगर vegetarian है: 1/2 कटोरी दाल। साथ में 1 फुल्का और सब्जी।",
             alternatives: ["मसूर दाल", "अरहर दाल", "Egg curry"]
           },
           {
@@ -902,39 +988,278 @@
             icon: "🌙",
             name: "रात",
             time: "8:00 PM",
-            dish: "हल्का dinner: सब्जी soup + फुल्का + छोटा protein",
-            sandhya: "1 फुल्का + soup + paneer 50 g या 1 egg।",
-            arun: "1 फुल्का + soup + paneer 30 g या 2 egg whites या 1/2 कटोरी दाल।",
+            dish: "हल्का dinner: सब्जी soup, फुल्का और छोटा प्रोटीन",
+            sandhya: "1 फुल्का, 1 कटोरी soup, और इनमें से एक: paneer 50 g या 1 अंडा।",
+            arun: "1 फुल्का, 1 कटोरी soup, और इनमें से एक: paneer 30 g या 2 egg whites या 1/2 कटोरी दाल।",
             alternatives: ["Paneer छोटा", "Egg whites", "1/2 कटोरी दाल"]
           }
         ]
       }
     ];
 
+    const foodLibrary = {
+      breakfast: [
+        {
+          id: "bf-besan-chilla",
+          dish: "बेसन चीला और थोड़ा दही",
+          sandhya: "2 छोटे चीले और 1/2 कटोरी दही। अगर भूख रह जाए तो 1 egg white अलग से ले सकती हैं।",
+          arun: "1-2 छोटे चीले और 2-3 चम्मच दही। नमक कम रखें।",
+          note: "यह नाश्ते का पूरा विकल्प है। अलग से रोटी/पोहा साथ में नहीं।"
+        },
+        {
+          id: "bf-moong-chilla",
+          dish: "मूंग दाल चीला",
+          sandhya: "2 छोटे चीले और 2-3 चम्मच दही।",
+          arun: "1-2 छोटे चीले। नमक कम; दही बहुत थोड़ा।",
+          note: "यह बेसन चीले की जगह ले सकता है।"
+        },
+        {
+          id: "bf-veg-dalia",
+          dish: "वेज दलिया",
+          sandhya: "1 कटोरी दलिया। गाजर/बीन्स/प्याज दलिया में ही डालें। जरूरत हो तो 1 उबला अंडा अलग से।",
+          arun: "3/4 कटोरी दलिया। नमक कम। अंडा न दें अगर रात को chicken/fish है।",
+          note: "सब्जी अलग से नहीं; दलिया में ही सब्जी डालनी है।"
+        },
+        {
+          id: "bf-veg-poha",
+          dish: "सब्जी वाला पोहा",
+          sandhya: "1 कटोरी पोहा। प्याज/गाजर/बीन्स पोहे में ही डालें। जरूरत हो तो 1 उबला अंडा अलग से।",
+          arun: "3/4 कटोरी पोहा। मूंगफली कम और नमक कम।",
+          note: "यह पूरा नाश्ता है। साथ में अलग रोटी नहीं।"
+        },
+        {
+          id: "bf-curd-roti",
+          dish: "दही और छोटी रोटी",
+          sandhya: "1 छोटी रोटी और 1/2 कटोरी दही।",
+          arun: "1 छोटी रोटी और 1/3 कटोरी दही। नमक कम।",
+          note: "हल्का नाश्ता चाहिए तो यह रखें।"
+        },
+        {
+          id: "bf-methi-roti-curd",
+          dish: "छोटी मेथी रोटी और दही",
+          sandhya: "1 छोटी मेथी रोटी और 1/2 कटोरी दही।",
+          arun: "1 छोटी मेथी रोटी और 1/3 कटोरी दही। नमक कम।",
+          note: "मेथी रोटी पर घी/तेल न लगाएं।"
+        },
+        {
+          id: "bf-egg-bhurji",
+          dish: "Egg bhurji और 1 छोटी फुल्का",
+          sandhya: "1 अंडा और 1 egg white की bhurji, साथ में 1 छोटी फुल्का।",
+          arun: "1 अंडा या 2 egg whites की bhurji, साथ में 1 छोटी फुल्का।",
+          note: "अगर उसी दिन dinner में chicken/fish है तो Arun के लिए यह विकल्प कम रखें।"
+        },
+        {
+          id: "bf-boiled-egg-roti",
+          dish: "उबला अंडा और छोटी फुल्का",
+          sandhya: "1 उबला अंडा, 1 egg white और 1 छोटी फुल्का।",
+          arun: "1 उबला अंडा या 2 egg whites और 1 छोटी फुल्का।",
+          note: "तेल नहीं लगता, इसलिए practical विकल्प है।"
+        }
+      ],
+      lunch: [
+        {
+          id: "lu-lauki-chana-dal",
+          dish: "लौकी चना दाल, छोटी फुल्का और सलाद",
+          sandhya: "1 कटोरी दाल, 2 छोटी फुल्का, और सलाद/सब्जी।",
+          arun: "1/2 कटोरी दाल, 1-2 छोटी फुल्का, और सब्जी की मात्रा ज्यादा रखें।",
+          note: "यह पूरा lunch है। अलग से दही/पनीर जोड़ना जरूरी नहीं।"
+        },
+        {
+          id: "lu-moong-tori",
+          dish: "मूंग दाल, तोरी और फुल्का",
+          sandhya: "1 कटोरी मूंग दाल, 2 छोटी फुल्का और तोरी।",
+          arun: "1/2 कटोरी मूंग दाल, 1-2 छोटी फुल्का और तोरी ज्यादा।",
+          note: "हल्का और kidney-friendly विकल्प।"
+        },
+        {
+          id: "lu-masoor-cabbage",
+          dish: "मसूर दाल, पत्ता गोभी और फुल्का",
+          sandhya: "1 कटोरी मसूर दाल, 1-2 छोटी फुल्का और पत्ता गोभी।",
+          arun: "1/2 कटोरी मसूर दाल, 1 छोटी फुल्का और पत्ता गोभी ज्यादा।",
+          note: "दाल की मात्रा Arun के लिए नापकर रखें।"
+        },
+        {
+          id: "lu-arhar-bhindi",
+          dish: "अरहर दाल, भिंडी और फुल्का",
+          sandhya: "3/4 से 1 कटोरी अरहर दाल, 2 छोटी फुल्का और भिंडी।",
+          arun: "1/2 कटोरी अरहर दाल, 1-2 छोटी फुल्का और भिंडी।",
+          note: "कम तेल में भिंडी बनाएं।"
+        },
+        {
+          id: "lu-gobhi-curd",
+          dish: "गोभी/बीन्स सब्जी, फुल्का और थोड़ा दही",
+          sandhya: "2 छोटी फुल्का, 1/2 कटोरी दही और गोभी/बीन्स की सब्जी।",
+          arun: "1-2 छोटी फुल्का, 1/3 कटोरी दही और सब्जी की मात्रा ज्यादा रखें।",
+          note: "यह दाल वाला lunch नहीं है; दही ही छोटा protein रहेगा।"
+        },
+        {
+          id: "lu-baingan-curd",
+          dish: "बैंगन भरता या भिंडी, फुल्का और थोड़ा दही",
+          sandhya: "2 छोटी फुल्का, 1/2 कटोरी दही और बैंगन/भिंडी।",
+          arun: "1-2 छोटी फुल्का, 1/3 कटोरी दही और बैंगन/भिंडी। दही ज्यादा नहीं।",
+          note: "भरता कम तेल में बनाएं।"
+        },
+        {
+          id: "lu-kadhi-lauki",
+          dish: "कम नमक वाली कढ़ी, लौकी/तोरी और फुल्का",
+          sandhya: "1 कटोरी कढ़ी, 1-2 छोटी फुल्का और लौकी/तोरी।",
+          arun: "1/2 कटोरी कढ़ी और 1 छोटी फुल्का। साथ में दाल की पूरी कटोरी नहीं।",
+          note: "कढ़ी हो तो दाल अलग से न रखें।"
+        },
+        {
+          id: "lu-chicken-sabzi",
+          dish: "Chicken curry, लौकी/तोरी और फुल्का",
+          sandhya: "Chicken 70-75 g cooked, 1-2 छोटी फुल्का और लौकी/तोरी।",
+          arun: "Chicken 50-60 g cooked और 1 छोटी फुल्का। इस खाने में अलग से दाल/दही नहीं।",
+          note: "सिर्फ नॉन-वेज वाले दिन रखें।",
+          nonveg: true
+        },
+        {
+          id: "lu-fish-sabzi",
+          dish: "Fish curry, टिंडा/लौकी और फुल्का",
+          sandhya: "Fish 70-75 g cooked, 1-2 छोटी फुल्का और टिंडा/लौकी।",
+          arun: "Fish 50-60 g cooked और 1 छोटी फुल्का। इस खाने में अलग से दाल/पनीर नहीं।",
+          note: "Fried fish नहीं; curry/steamed style बेहतर।",
+          nonveg: true
+        }
+      ],
+      snack: [
+        {
+          id: "sn-roasted-chana",
+          dish: "भुना चना",
+          sandhya: "1 छोटी मुट्ठी भुना चना।",
+          arun: "थोड़ा भुना चना। नमक न डालें।",
+          note: "यह शाम का snack है, पूरा dinner नहीं।"
+        },
+        {
+          id: "sn-makhana",
+          dish: "बिना नमक मखाना",
+          sandhya: "1 कटोरी roasted मखाना।",
+          arun: "1/2 कटोरी roasted मखाना।",
+          note: "हल्का भूनें, नमक न डालें।"
+        },
+        {
+          id: "sn-buttermilk",
+          dish: "छाछ बिना नमक",
+          sandhya: "1 गिलास छाछ।",
+          arun: "1 छोटा गिलास छाछ, बिना नमक।",
+          note: "भुना जीरा डाल सकते हैं, नमक नहीं।"
+        },
+        {
+          id: "sn-small-fruit",
+          dish: "छोटा फल",
+          sandhya: "1 छोटा सेब, अमरूद, पपीता या नाशपाती।",
+          arun: "1 छोटा फल। Juice नहीं।",
+          note: "फल पूरा खाएं, juice नहीं।"
+        },
+        {
+          id: "sn-tea-peanuts",
+          dish: "चाय और थोड़ी बिना नमक मूंगफली",
+          sandhya: "बिना चीनी चाय और 8-10 दाने मूंगफली।",
+          arun: "बिना चीनी चाय और 5-6 दाने मूंगफली।",
+          note: "मूंगफली ज्यादा नहीं।"
+        },
+        {
+          id: "sn-tea-only",
+          dish: "हल्की चाय बिना चीनी",
+          sandhya: "1 कप चाय बिना चीनी। भूख हो तो 1 छोटा फल।",
+          arun: "1 छोटा कप चाय बिना चीनी।",
+          note: "बिस्कुट/नमकीन साथ में न रखें।"
+        }
+      ],
+      dinner: [
+        {
+          id: "di-bhindi-egg",
+          dish: "भिंडी, फुल्का और हल्की egg bhurji",
+          sandhya: "1 पूरा अंडा, 1 egg white, 1-2 फुल्का और भिंडी।",
+          arun: "1 अंडा या 2 egg whites, 1 फुल्का और भिंडी। इस खाने में अलग से दाल/दही नहीं।",
+          note: "Egg वाला dinner है, दाल साथ में न जोड़ें।"
+        },
+        {
+          id: "di-palak-paneer",
+          dish: "हल्का पालक पनीर और फुल्का",
+          sandhya: "Paneer 50-60 g और 1-2 फुल्का।",
+          arun: "Paneer 30-40 g और 1 फुल्का। साथ में दाल की पूरी कटोरी नहीं।",
+          note: "Paneer रोज नहीं।"
+        },
+        {
+          id: "di-masoor-cabbage",
+          dish: "मसूर दाल, cabbage/beans और फुल्का",
+          sandhya: "1 कटोरी दाल, 1-2 छोटी फुल्का और cabbage/beans।",
+          arun: "1/2 कटोरी दाल, 1 छोटी फुल्का और सब्जी की मात्रा ज्यादा रखें।",
+          note: "Simple vegetarian dinner।"
+        },
+        {
+          id: "di-moong-sabzi",
+          dish: "सब्जी, फुल्का और मूंग दाल",
+          sandhya: "1 कटोरी मूंग दाल, 1-2 छोटी फुल्का और सब्जी।",
+          arun: "1/2 कटोरी मूंग दाल, 1 छोटी फुल्का और सब्जी।",
+          note: "हल्का dinner चाहिए तो अच्छा।"
+        },
+        {
+          id: "di-lauki-dal",
+          dish: "लौकी दाल और फुल्का",
+          sandhya: "1 कटोरी लौकी दाल और 1-2 छोटी फुल्का।",
+          arun: "1/2 कटोरी लौकी दाल और 1 छोटी फुल्का।",
+          note: "दाल और सब्जी एक साथ बन जाती है।"
+        },
+        {
+          id: "di-soup-protein",
+          dish: "सब्जी soup, फुल्का और छोटा प्रोटीन",
+          sandhya: "1 फुल्का, 1 कटोरी soup, और इनमें से एक: paneer 50 g या 1 अंडा।",
+          arun: "1 फुल्का, 1 कटोरी soup, और इनमें से एक: paneer 30 g या 2 egg whites या 1/2 कटोरी दाल।",
+          note: "हल्की रात के लिए।"
+        },
+        {
+          id: "di-chicken-sabzi",
+          dish: "Chicken curry, लौकी/तोरी और 1 फुल्का",
+          sandhya: "Chicken 70-75 g cooked, 1-2 छोटी फुल्का और लौकी/तोरी।",
+          arun: "Chicken 50-60 g cooked और 1 छोटी फुल्का। इस खाने में अलग से दाल/दही नहीं।",
+          note: "हर 2-3 दिन से ज्यादा नहीं।",
+          nonveg: true
+        },
+        {
+          id: "di-fish-sabzi",
+          dish: "Fish curry, टिंडा/लौकी और फुल्का",
+          sandhya: "Fish 70-75 g cooked, 1-2 छोटी फुल्का और टिंडा/लौकी।",
+          arun: "Fish 50-60 g cooked और 1 छोटी फुल्का। इस खाने में अलग से दाल/पनीर नहीं।",
+          note: "Fried fish नहीं।",
+          nonveg: true
+        },
+        {
+          id: "di-egg-curry",
+          dish: "Egg curry, भिंडी/बीन्स और फुल्का",
+          sandhya: "1 अंडा और 1 egg white की curry, 1-2 फुल्का और सब्जी।",
+          arun: "1 अंडा या 2 egg whites की curry, 1 फुल्का और सब्जी।",
+          note: "दाल साथ में न रखें।"
+        }
+      ]
+    };
+
     const proteinOptions = [
       {
         title: "दाल",
         sandhya: "1 कटोरी cooked दाल",
         arun: "1/2 कटोरी cooked दाल",
-        note: "मूंग, मसूर, अरहर, चना दाल rotate करें। Arun को same meal में paneer/egg/non-veg के साथ full दाल न दें।"
+        note: "मूंग, मसूर, अरहर, चना दाल बदल-बदलकर दें। Arun को उसी खाने में paneer/egg/non-veg के साथ पूरी कटोरी दाल न दें।"
       },
       {
         title: "अंडा",
-        sandhya: "1 whole egg + 1 egg white",
-        arun: "1 whole egg या 2 egg whites",
-        note: "Boiled, bhurji या light curry। तेल और नमक कम।"
+        sandhya: "1 पूरा अंडा और 1 egg white",
+        arun: "1 पूरा अंडा या 2 egg whites",
+        note: "उबला अंडा, bhurji या light curry। तेल और नमक कम।"
       },
       {
         title: "Paneer",
         sandhya: "50-60 g",
         arun: "30-40 g",
-        note: "Daily नहीं। Palak/lauki/tori के साथ हल्का बनाएं।"
+        note: "रोज नहीं। पालक/लौकी/तोरी के साथ हल्का बनाएं।"
       },
       {
         title: "दही / कढ़ी",
         sandhya: "1/2 कटोरी दही या 1 कटोरी कढ़ी",
         arun: "1/3 कटोरी दही या 1/2 कटोरी कढ़ी",
-        note: "बिना extra नमक। कढ़ी के साथ दाल full bowl न रखें।"
+        note: "बिना अतिरिक्त नमक। कढ़ी के साथ दाल की पूरी कटोरी न रखें।"
       },
       {
         title: "Chicken",
@@ -958,7 +1283,7 @@
         title: "भुना चना / मखाना",
         sandhya: "1 छोटी मुट्ठी चना या 1 कटोरी मखाना",
         arun: "थोड़ा चना या 1/2 कटोरी मखाना",
-        note: "Unsalted रखें। ये snack है, main protein meal नहीं।"
+        note: "बिना नमक रखें। ये snack है, मुख्य प्रोटीन खाना नहीं।"
       },
       {
         title: "Sprouts",
@@ -968,7 +1293,12 @@
       }
     ];
 
+    const STORAGE_KEY = "parentsMealPlanSelectionsV2";
+    const WEEK_KEY = "parentsMealPlanWeekV2";
     const todayIndex = getIndiaDayIndex();
+    const currentWeekKey = getIndiaWeekKey();
+    let selectedMeals = loadSelectedMeals();
+    applyWeeklyRotationIfNeeded();
     const orderedDays = [...days.filter(day => day.jsDay === todayIndex), ...days.filter(day => day.jsDay !== todayIndex)];
 
     renderToday();
@@ -983,6 +1313,150 @@
         timeZone: "Asia/Kolkata"
       }).format(new Date());
       return { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }[short];
+    }
+
+    function getIndiaWeekKey() {
+      const indiaDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+      const yearStart = new Date(indiaDate.getFullYear(), 0, 1);
+      const dayOfYear = Math.floor((indiaDate - yearStart) / 86400000) + 1;
+      const week = Math.ceil((dayOfYear + yearStart.getDay()) / 7);
+      return `${indiaDate.getFullYear()}-${String(week).padStart(2, "0")}`;
+    }
+
+    function loadSelectedMeals() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+      } catch {
+        return {};
+      }
+    }
+
+    function saveSelectedMeals() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(selectedMeals));
+      localStorage.setItem(WEEK_KEY, currentWeekKey);
+    }
+
+    function applyWeeklyRotationIfNeeded() {
+      const savedWeek = localStorage.getItem(WEEK_KEY);
+      if (savedWeek === currentWeekKey) return;
+      selectedMeals = createWeeklySelections(currentWeekKey);
+      saveSelectedMeals();
+      setStatus("इस हफ्ते के लिए नया भोजन अपने आप बन गया है।");
+    }
+
+    function createWeeklySelections(seed) {
+      const selections = {};
+      days.forEach(day => {
+        day.meals.forEach((meal, mealIndex) => {
+          const type = getMealType(mealIndex);
+          const candidates = getAllowedItems(type, day, mealIndex);
+          const selected = candidates[seededIndex(`${seed}-${day.key}-${mealIndex}`, candidates.length)];
+          selections[getMealSlotKey(day.key, mealIndex)] = selected.id;
+        });
+      });
+      return selections;
+    }
+
+    function getMealType(mealIndex) {
+      return ["breakfast", "lunch", "snack", "dinner"][mealIndex];
+    }
+
+    function getMealSlotKey(dayKey, mealIndex) {
+      return `${dayKey}-${mealIndex}`;
+    }
+
+    function getAllLibraryItems() {
+      return Object.values(foodLibrary).flat();
+    }
+
+    function findLibraryItem(id) {
+      return getAllLibraryItems().find(item => item.id === id);
+    }
+
+    function getAllowedItems(type, day, mealIndex) {
+      const items = foodLibrary[type] || [];
+      const nonVegAllowed = day.badge === "nonveg" && (mealIndex === 3 || (day.key === "sunday" && mealIndex === 1));
+      if (type === "lunch" || type === "dinner") {
+        return items.filter(item => nonVegAllowed || !item.nonveg);
+      }
+      return items;
+    }
+
+    function mealToDefaultItem(meal) {
+      return {
+        id: "default",
+        dish: meal.dish,
+        sandhya: meal.sandhya,
+        arun: meal.arun,
+        note: "यह मूल भोजन है।"
+      };
+    }
+
+    function getCurrentMealItem(day, meal, mealIndex) {
+      const selectedId = selectedMeals[getMealSlotKey(day.key, mealIndex)];
+      return findLibraryItem(selectedId) || mealToDefaultItem(meal);
+    }
+
+    function getAlternativeItems(day, mealIndex, currentId) {
+      const type = getMealType(mealIndex);
+      const candidates = getAllowedItems(type, day, mealIndex).filter(item => item.id !== currentId);
+      return candidates.slice(0, 4);
+    }
+
+    function chooseMeal(dayKey, mealIndex, itemId) {
+      selectedMeals[getMealSlotKey(dayKey, mealIndex)] = itemId;
+      saveSelectedMeals();
+      rerenderPreservingOpenDays("बदल दिया: अब यह मुख्य खाना है।");
+    }
+
+    function shuffleMeal(dayKey, mealIndex) {
+      const day = days.find(item => item.key === dayKey);
+      const type = getMealType(mealIndex);
+      const current = selectedMeals[getMealSlotKey(dayKey, mealIndex)];
+      const candidates = getAllowedItems(type, day, mealIndex).filter(item => item.id !== current);
+      const selected = candidates[Math.floor(Math.random() * candidates.length)];
+      chooseMeal(dayKey, mealIndex, selected.id);
+    }
+
+    function shuffleWholeWeek() {
+      const selections = {};
+      days.forEach(day => {
+        day.meals.forEach((meal, mealIndex) => {
+          const candidates = getAllowedItems(getMealType(mealIndex), day, mealIndex);
+          const selected = candidates[Math.floor(Math.random() * candidates.length)];
+          selections[getMealSlotKey(day.key, mealIndex)] = selected.id;
+        });
+      });
+      selectedMeals = selections;
+      saveSelectedMeals();
+      rerenderPreservingOpenDays("इस हफ्ते का नया भोजन बन गया। नॉन-वेज अभी भी सिर्फ सही दिनों में रहेगा।");
+    }
+
+    function resetPlan() {
+      selectedMeals = {};
+      saveSelectedMeals();
+      rerenderPreservingOpenDays("मूल भोजन वापस आ गया।");
+    }
+
+    function rerenderPreservingOpenDays(message) {
+      const openKeys = new Set([...document.querySelectorAll(".day-card[open]")].map(card => card.id));
+      renderDays(openKeys);
+      bindAlternativeButtons();
+      setStatus(message);
+    }
+
+    function setStatus(message) {
+      const status = document.getElementById("shuffleStatus");
+      if (status) status.textContent = message || "";
+    }
+
+    function seededIndex(input, max) {
+      if (!max) return 0;
+      let hash = 0;
+      for (let i = 0; i < input.length; i++) {
+        hash = ((hash << 5) - hash + input.charCodeAt(i)) | 0;
+      }
+      return Math.abs(hash) % max;
     }
 
     function renderToday() {
@@ -1004,15 +1478,16 @@
       `).join("");
     }
 
-    function renderDays() {
+    function renderDays(openKeys = null) {
       const list = document.getElementById("dayList");
       list.innerHTML = orderedDays.map(day => {
         const isToday = day.jsDay === todayIndex;
+        const shouldOpen = isToday || (openKeys && openKeys.has(day.key));
         const badge = day.badge === "nonveg"
-          ? '<span class="nonveg-badge">Non-veg optional</span>'
-          : '<span class="veg-badge">Vegetarian</span>';
+          ? '<span class="nonveg-badge">नॉन-वेज विकल्प</span>'
+          : '<span class="veg-badge">शाकाहारी</span>';
         return `
-          <details class="day-card ${isToday ? "today" : ""}" id="${day.key}" ${isToday ? "open" : ""}>
+          <details class="day-card ${isToday ? "today" : ""}" id="${day.key}" ${shouldOpen ? "open" : ""}>
             <summary class="day-summary">
               <div>
                 <div class="day-title">
@@ -1025,15 +1500,17 @@
               <span class="chevron" aria-hidden="true">⌄</span>
             </summary>
             <div class="meals">
-              ${day.meals.map((meal, mealIndex) => renderMeal(day.key, meal, mealIndex)).join("")}
+              ${day.meals.map((meal, mealIndex) => renderMeal(day, meal, mealIndex)).join("")}
             </div>
           </details>
         `;
       }).join("");
     }
 
-    function renderMeal(dayKey, meal, mealIndex) {
-      const altId = `${dayKey}-alt-${mealIndex}`;
+    function renderMeal(day, meal, mealIndex) {
+      const altId = `${day.key}-alt-${mealIndex}`;
+      const current = getCurrentMealItem(day, meal, mealIndex);
+      const alternatives = getAlternativeItems(day, mealIndex, current.id);
       return `
         <article class="meal">
           <div class="meal-head">
@@ -1043,29 +1520,59 @@
               <div class="meal-time">${meal.time}</div>
             </div>
           </div>
-          <p class="dish">${meal.dish}</p>
+          <p class="dish"><strong>आज का मुख्य खाना:</strong> ${current.dish}</p>
           <div class="portion-row">
             <div class="portion sandhya">
               <p class="portion-label">Sandhya के लिए</p>
-              <div class="portion-text">${meal.sandhya}</div>
-              <small>Diabetes + muscle strength</small>
+              <div class="portion-text">${current.sandhya}</div>
+              <small>Sugar control और ताकत</small>
             </div>
             <div class="portion arun">
               <p class="portion-label">Arun के लिए</p>
-              <div class="portion-text">${meal.arun}</div>
-              <small>Diabetes + BP + kidney सावधानी</small>
+              <div class="portion-text">${current.arun}</div>
+              <small>Sugar, BP और kidney सावधानी</small>
             </div>
           </div>
-          <button class="alt-toggle" type="button" aria-expanded="false" aria-controls="${altId}" data-target="${altId}">
-            विकल्प देखें
-          </button>
+          <div class="meal-action-row">
+            <button class="alt-toggle" type="button" aria-expanded="false" aria-controls="${altId}" data-target="${altId}">
+              मुख्य खाने की जगह विकल्प देखें
+            </button>
+            <button class="meal-shuffle" type="button" data-day="${day.key}" data-meal="${mealIndex}">
+              इसी खाने को बदलें
+            </button>
+          </div>
           <div class="alternatives" id="${altId}">
-            <p class="alt-title">आज यह भी बना सकते हैं</p>
+            <p class="alt-title">ये विकल्प ऊपर लिखे मुख्य खाने की जगह हैं</p>
+            <p class="alt-help">इनमें से सिर्फ एक चुनें। मुख्य खाना और विकल्प दोनों साथ में नहीं खाने हैं।</p>
             <ul class="alt-list">
-              ${meal.alternatives.map(item => `<li>${item}</li>`).join("")}
+              ${alternatives.map(item => renderAlternative(day.key, mealIndex, item)).join("")}
             </ul>
           </div>
         </article>
+      `;
+    }
+
+    function renderAlternative(dayKey, mealIndex, item) {
+      return `
+        <li>
+          <div class="alt-card">
+            <div class="alt-card-title">${item.dish}</div>
+            <div class="alt-card-note">${item.note}</div>
+            <div class="portion-row">
+              <div class="portion sandhya">
+                <p class="portion-label">Sandhya</p>
+                <div class="portion-text">${item.sandhya}</div>
+              </div>
+              <div class="portion arun">
+                <p class="portion-label">Arun</p>
+                <div class="portion-text">${item.arun}</div>
+              </div>
+            </div>
+            <button class="choose-alt" type="button" data-day="${dayKey}" data-meal="${mealIndex}" data-item="${item.id}">
+              इसे मुख्य खाना बनाएं
+            </button>
+          </div>
+        </li>
       `;
     }
 
@@ -1090,14 +1597,40 @@
     }
 
     function bindAlternativeButtons() {
+      if (window.mealPlanButtonsBound) return;
+      window.mealPlanButtonsBound = true;
       document.addEventListener("click", event => {
+        const weeklyShuffle = event.target.closest("#shuffleWeek");
+        if (weeklyShuffle) {
+          shuffleWholeWeek();
+          return;
+        }
+
+        const reset = event.target.closest("#resetPlan");
+        if (reset) {
+          resetPlan();
+          return;
+        }
+
+        const mealShuffle = event.target.closest(".meal-shuffle");
+        if (mealShuffle) {
+          shuffleMeal(mealShuffle.dataset.day, Number(mealShuffle.dataset.meal));
+          return;
+        }
+
+        const chooseAlt = event.target.closest(".choose-alt");
+        if (chooseAlt) {
+          chooseMeal(chooseAlt.dataset.day, Number(chooseAlt.dataset.meal), chooseAlt.dataset.item);
+          return;
+        }
+
         const button = event.target.closest(".alt-toggle");
         if (!button) return;
         const target = document.getElementById(button.dataset.target);
         const willOpen = !target.classList.contains("show");
         target.classList.toggle("show", willOpen);
         button.setAttribute("aria-expanded", String(willOpen));
-        button.textContent = willOpen ? "विकल्प छुपाएं" : "विकल्प देखें";
+        button.textContent = willOpen ? "विकल्प छुपाएं" : "मुख्य खाने की जगह विकल्प देखें";
       });
     }
   </script>
