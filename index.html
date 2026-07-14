@@ -1,1638 +1,667 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#fff7ed">
-  <title>Sandhya और Arun का साप्ताहिक भोजन प्लान</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&family=Noto+Sans+Devanagari:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #fff7ed;
-      --surface: #fffbf5;
-      --card: #ffffff;
-      --ink: #1c1917;
-      --muted: #57534e;
-      --line: #ead7c0;
-      --amber: #b45309;
-      --saddle: #7c2d12;
-      --today: #f59e0b;
-      --sandhya-bg: #e6fffb;
-      --sandhya-border: #0f766e;
-      --sandhya-text: #134e4a;
-      --arun-bg: #fff1df;
-      --arun-border: #9a3412;
-      --arun-text: #7c2d12;
-      --shadow: 0 16px 38px rgba(124, 45, 18, 0.12);
-    }
-
-    * { box-sizing: border-box; }
-
-    html {
-      background: var(--bg);
-      color: var(--ink);
-      font-family: "Noto Sans Devanagari", system-ui, sans-serif;
-      scroll-behavior: smooth;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at top left, rgba(245, 158, 11, 0.16), transparent 34rem),
-        linear-gradient(180deg, #fff7ed 0%, #fffbf5 54%, #fff7ed 100%);
-    }
-
-    .app {
-      width: min(100%, 880px);
-      margin: 0 auto;
-      padding: 18px 14px 44px;
-    }
-
-    .top {
-      margin: 0 -14px 16px;
-      padding: 14px 14px 16px;
-      background: transparent;
-      border-bottom: 2px solid rgba(180, 83, 9, 0.22);
-    }
-
-    .today-panel {
-      border: 3px solid var(--saddle);
-      background: #ffffff;
-      border-radius: 22px;
-      padding: 18px;
-      box-shadow: var(--shadow);
-    }
-
-    .eyebrow {
-      margin: 0 0 6px;
-      color: var(--saddle);
-      font: 800 14px/1.2 "Inter", sans-serif;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    h1 {
-      margin: 0;
-      color: var(--saddle);
-      font-size: clamp(30px, 8.4vw, 54px);
-      line-height: 1.06;
-      letter-spacing: 0;
-    }
-
-    .date {
-      margin: 8px 0 0;
-      color: var(--ink);
-      font-size: clamp(21px, 5.4vw, 31px);
-      font-weight: 800;
-    }
-
-    .hint {
-      margin: 10px 0 0;
-      color: var(--muted);
-      font-size: 18px;
-      line-height: 1.35;
-    }
-
-    .quick-nav {
-      display: flex;
-      gap: 10px;
-      overflow-x: auto;
-      padding: 12px 2px 2px;
-      scrollbar-width: none;
-    }
-
-    .quick-nav::-webkit-scrollbar { display: none; }
-
-    .quick-nav a {
-      flex: 0 0 auto;
-      min-height: 52px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 10px 16px;
-      border: 2px solid var(--line);
-      border-radius: 999px;
-      background: #fffaf4;
-      color: var(--saddle);
-      font-weight: 900;
-      text-decoration: none;
-      font-size: 18px;
-    }
-
-    .quick-nav a.today-link {
-      background: var(--saddle);
-      color: white;
-      border-color: var(--saddle);
-    }
-
-    .plan-actions {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    .plan-button,
-    .meal-shuffle,
-    .choose-alt {
-      min-height: 60px;
-      border: 0;
-      border-radius: 18px;
-      font: 900 18px/1.15 "Noto Sans Devanagari", "Inter", sans-serif;
-      cursor: pointer;
-    }
-
-    .plan-button.primary,
-    .meal-shuffle,
-    .choose-alt {
-      background: var(--saddle);
-      color: white;
-    }
-
-    .plan-button.secondary {
-      background: #fff;
-      color: var(--saddle);
-      border: 3px solid var(--saddle);
-    }
-
-    .shuffle-status {
-      margin: 8px 2px 0;
-      color: var(--saddle);
-      font-size: 16px;
-      font-weight: 850;
-      min-height: 22px;
-    }
-
-    .section-title {
-      margin: 26px 4px 12px;
-      color: var(--saddle);
-      font-size: 27px;
-      line-height: 1.15;
-      font-weight: 900;
-    }
-
-    .day-list {
-      display: grid;
-      gap: 14px;
-    }
-
-    details.day-card {
-      border: 2px solid var(--line);
-      border-radius: 24px;
-      background: var(--card);
-      box-shadow: 0 10px 28px rgba(87, 83, 78, 0.08);
-      overflow: clip;
-    }
-
-    details.day-card.today {
-      border: 4px solid var(--today);
-      box-shadow: 0 18px 42px rgba(180, 83, 9, 0.22);
-    }
-
-    details.day-card[open] summary {
-      border-bottom: 2px solid var(--line);
-      background: #fff8ec;
-    }
-
-    summary.day-summary {
-      min-height: 76px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      align-items: center;
-      padding: 18px;
-      cursor: pointer;
-      list-style: none;
-    }
-
-    summary.day-summary::-webkit-details-marker { display: none; }
-
-    .day-title {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px 10px;
-      align-items: center;
-    }
-
-    .day-name {
-      color: var(--ink);
-      font-size: clamp(25px, 6.5vw, 34px);
-      font-weight: 900;
-      line-height: 1.1;
-    }
-
-    .today-badge,
-    .veg-badge,
-    .nonveg-badge {
-      display: inline-flex;
-      min-height: 36px;
-      align-items: center;
-      padding: 5px 11px;
-      border-radius: 999px;
-      font: 900 14px/1.1 "Inter", "Noto Sans Devanagari", sans-serif;
-      white-space: nowrap;
-    }
-
-    .today-badge {
-      background: #fef3c7;
-      color: #78350f;
-      border: 2px solid #f59e0b;
-    }
-
-    .veg-badge {
-      background: #ecfdf5;
-      color: #065f46;
-      border: 2px solid #10b981;
-    }
-
-    .nonveg-badge {
-      background: #fff7ed;
-      color: var(--saddle);
-      border: 2px solid var(--amber);
-    }
-
-    .summary-sub {
-      margin-top: 8px;
-      color: var(--muted);
-      font-size: 18px;
-      font-weight: 700;
-    }
-
-    .chevron {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      background: var(--saddle);
-      color: #fff;
-      font-size: 30px;
-      font-weight: 900;
-      transform: rotate(0deg);
-      transition: transform 160ms ease;
-    }
-
-    details[open] .chevron { transform: rotate(180deg); }
-
-    .meals {
-      display: grid;
-      gap: 14px;
-      padding: 16px;
-      background: #fffbf5;
-    }
-
-    .meal {
-      border: 2px solid #ead7c0;
-      border-radius: 20px;
-      background: #ffffff;
-      padding: 16px;
-    }
-
-    .meal-head {
-      display: grid;
-      grid-template-columns: 56px 1fr;
-      gap: 12px;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-
-    .icon {
-      width: 56px;
-      height: 56px;
-      border-radius: 18px;
-      display: grid;
-      place-items: center;
-      background: #fff1df;
-      border: 2px solid #fed7aa;
-      font-size: 31px;
-    }
-
-    .meal-name {
-      color: var(--saddle);
-      font-size: 25px;
-      font-weight: 900;
-      line-height: 1.12;
-    }
-
-    .meal-time {
-      margin-top: 2px;
-      color: var(--muted);
-      font: 800 14px/1.2 "Inter", sans-serif;
-    }
-
-    .dish {
-      margin: 0 0 14px;
-      color: var(--ink);
-      font-size: 21px;
-      line-height: 1.35;
-      font-weight: 650;
-    }
-
-    .portion-row {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
-
-    .portion {
-      min-height: 104px;
-      border-radius: 18px;
-      padding: 14px;
-      border: 3px solid;
-    }
-
-    .portion.sandhya {
-      background: var(--sandhya-bg);
-      border-color: var(--sandhya-border);
-      color: var(--sandhya-text);
-    }
-
-    .portion.arun {
-      background: var(--arun-bg);
-      border-color: var(--arun-border);
-      color: var(--arun-text);
-    }
-
-    .portion-label {
-      margin: 0 0 5px;
-      font-size: 20px;
-      font-weight: 950;
-      line-height: 1.12;
-    }
-
-    .portion small {
-      display: block;
-      margin-top: 4px;
-      color: inherit;
-      opacity: .84;
-      font-size: 16px;
-      font-weight: 800;
-      line-height: 1.25;
-    }
-
-    .portion-text {
-      font-size: 19px;
-      line-height: 1.28;
-      font-weight: 780;
-    }
-
-    .meal-action-row {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    .alt-toggle {
-      width: 100%;
-      min-height: 62px;
-      border: 0;
-      border-radius: 18px;
-      background: var(--saddle);
-      color: white;
-      font: 900 21px/1.15 "Noto Sans Devanagari", "Inter", sans-serif;
-      cursor: pointer;
-    }
-
-    .meal-shuffle {
-      background: #f59e0b;
-      color: #431407;
-    }
-
-    .alt-toggle:focus-visible,
-    .meal-shuffle:focus-visible,
-    .plan-button:focus-visible,
-    .choose-alt:focus-visible,
-    summary:focus-visible,
-    .quick-nav a:focus-visible {
-      outline: 5px solid #f59e0b;
-      outline-offset: 3px;
-    }
-
-    .alternatives {
-      display: none;
-      margin-top: 12px;
-      padding: 14px;
-      border-radius: 18px;
-      background: #fff7ed;
-      border: 2px dashed var(--amber);
-    }
-
-    .alternatives.show { display: block; }
-
-    .alt-title {
-      margin: 0 0 8px;
-      color: var(--saddle);
-      font-size: 20px;
-      font-weight: 950;
-    }
-
-    .alt-help {
-      margin: 0 0 12px;
-      color: var(--muted);
-      font-size: 18px;
-      line-height: 1.35;
-      font-weight: 760;
-    }
-
-    .alt-list {
-      display: grid;
-      gap: 12px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .alt-list li {
-      padding: 0;
-      border-radius: 0;
-      background: transparent;
-      border: 0;
-      color: var(--ink);
-      font-size: 19px;
-      line-height: 1.25;
-      font-weight: 700;
-    }
-
-    .alt-card {
-      display: grid;
-      gap: 10px;
-      padding: 13px;
-      border-radius: 16px;
-      background: #fff;
-      border: 2px solid #fed7aa;
-    }
-
-    .alt-card-title {
-      color: var(--saddle);
-      font-size: 21px;
-      font-weight: 950;
-      line-height: 1.2;
-    }
-
-    .alt-card-note {
-      color: var(--muted);
-      font-size: 16px;
-      line-height: 1.3;
-      font-weight: 760;
-    }
-
-    .protein-grid {
-      display: grid;
-      gap: 14px;
-    }
-
-    .protein-card {
-      border: 2px solid var(--line);
-      border-radius: 22px;
-      background: white;
-      padding: 16px;
-      box-shadow: 0 10px 24px rgba(87, 83, 78, 0.08);
-    }
-
-    .protein-title {
-      margin: 0 0 10px;
-      color: var(--saddle);
-      font-size: 24px;
-      font-weight: 950;
-      line-height: 1.16;
-    }
-
-    .protein-note {
-      margin: 10px 0 0;
-      color: var(--muted);
-      font-size: 17px;
-      line-height: 1.32;
-      font-weight: 700;
-    }
-
-    .rules {
-      margin-top: 26px;
-      border: 3px solid var(--saddle);
-      border-radius: 24px;
-      background: white;
-      overflow: clip;
-    }
-
-    .rules summary {
-      min-height: 72px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 18px;
-      color: var(--saddle);
-      cursor: pointer;
-      list-style: none;
-      font-size: 26px;
-      font-weight: 950;
-    }
-
-    .rules summary::-webkit-details-marker { display: none; }
-
-    .rules-body {
-      padding: 0 18px 18px;
-      border-top: 2px solid var(--line);
-      background: #fffaf4;
-    }
-
-    .rule-block {
-      padding: 16px 0;
-      border-bottom: 2px solid var(--line);
-    }
-
-    .rule-block:last-child { border-bottom: 0; }
-
-    .rule-block h3 {
-      margin: 0 0 8px;
-      color: var(--saddle);
-      font-size: 22px;
-      line-height: 1.2;
-    }
-
-    .rule-block ul {
-      margin: 0;
-      padding-left: 24px;
-      color: var(--ink);
-      font-size: 20px;
-      line-height: 1.38;
-      font-weight: 650;
-    }
-
-    .rule-block li { margin: 7px 0; }
-
-    .medical-note {
-      margin: 18px 2px 0;
-      padding: 16px;
-      border-left: 6px solid var(--amber);
-      border-radius: 18px;
-      background: #fff;
-      color: var(--muted);
-      font-size: 17px;
-      line-height: 1.4;
-      font-weight: 700;
-    }
-
-    .en {
-      font-family: "Inter", "Noto Sans Devanagari", sans-serif;
-      letter-spacing: 0;
-    }
-
-    @media (min-width: 640px) {
-      .app { padding: 24px 22px 56px; }
-      .top { margin: 0 -22px 20px; padding: 18px 22px; }
-      .portion-row { grid-template-columns: 1fr 1fr; }
-      .plan-actions { grid-template-columns: 1fr 1fr; }
-      .meal-action-row { grid-template-columns: 1fr 1fr; }
-      .protein-grid { grid-template-columns: 1fr 1fr; }
-      .meal { padding: 18px; }
-    }
-
-    @media (min-width: 860px) {
-      .protein-grid { grid-template-columns: repeat(3, 1fr); }
-    }
-
-    @media print {
-      .top { position: static; }
-      .quick-nav, .alt-toggle { display: none; }
-      .alternatives { display: block; }
-      details.day-card { break-inside: avoid; }
-      details.day-card:not([open]) .meals { display: grid; }
-      .rules[open] .rules-body, .rules .rules-body { display: block; }
-      body { background: white; }
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>माँ-पापा का खाना — Weekly Meal Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fdf8ef;
+    --card: #ffffff;
+    --ink: #1c1c1c;
+    --ink-soft: #4a4a4a;
+    --accent: #b45309;
+    --accent-dark: #7c2d12;
+    --mom: #be185d;
+    --mom-bg: #fce7f3;
+    --dad: #1d4ed8;
+    --dad-bg: #dbeafe;
+    --border: #e7ddc9;
+    --shadow: 0 4px 14px rgba(60, 40, 10, 0.08);
+    --warn-bg: #fef3c7;
+    --warn-ink: #78350f;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { font-size: 18px; }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Noto Sans Devanagari', 'Inter', system-ui, sans-serif;
+    line-height: 1.65;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding: 24px 12px 20px;
+    border-bottom: 3px solid var(--border);
+  }
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent-dark);
+    line-height: 1.2;
+  }
+  header .sub {
+    font-size: 1.05rem;
+    color: var(--ink-soft);
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Today card */
+  .today-card {
+    background: var(--card);
+    border: 2px solid var(--accent);
+    border-radius: 16px;
+    padding: 20px 22px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow);
+  }
+  .today-label {
+    font-size: 1rem;
+    color: var(--accent-dark);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    font-family: 'Inter', sans-serif;
+  }
+  .today-day {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .today-date {
+    font-size: 1rem;
+    color: var(--ink-soft);
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Day list */
+  .day-list {
+    display: grid;
+    gap: 14px;
+  }
+
+  details.day {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 0;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  details.day[open] {
+    border-color: var(--accent);
+  }
+  details.day.today {
+    border-color: var(--accent);
+    border-width: 2px;
+  }
+  details.day summary {
+    padding: 18px 22px;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--ink);
+    user-select: none;
+  }
+  details.day summary::-webkit-details-marker { display: none; }
+  details.day summary::after {
+    content: '▼';
+    font-size: 0.9rem;
+    color: var(--accent);
+    transition: transform 0.2s;
+    font-family: 'Inter', sans-serif;
+  }
+  details.day[open] summary::after { transform: rotate(180deg); }
+
+  .day-label-en {
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+    font-weight: 400;
+    font-family: 'Inter', sans-serif;
+    margin-right: auto;
+    margin-left: 12px;
+  }
+
+  .day-body {
+    padding: 4px 22px 22px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Meals */
+  .meal {
+    padding: 16px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .meal:last-child { border-bottom: none; }
+
+  .meal-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--accent-dark);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .meal-icon {
+    font-size: 1.4rem;
+  }
+  .meal-time {
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+    font-weight: 400;
+    font-family: 'Inter', sans-serif;
+  }
+  .meal-desc {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin-bottom: 10px;
+  }
+
+  .portions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  @media (max-width: 500px) {
+    .portions { grid-template-columns: 1fr; }
+  }
+  .portion {
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  .portion.mom {
+    background: var(--mom-bg);
+    border-left: 4px solid var(--mom);
+  }
+  .portion.dad {
+    background: var(--dad-bg);
+    border-left: 4px solid var(--dad);
+  }
+  .portion .who {
+    font-weight: 700;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .portion.mom .who { color: var(--mom); }
+  .portion.dad .who { color: var(--dad); }
+
+  /* Rules section */
+  section.rules {
+    margin-top: 40px;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  section.rules > details {
+    padding: 0;
+  }
+  section.rules summary {
+    padding: 18px 22px;
+    cursor: pointer;
+    list-style: none;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--accent-dark);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  section.rules summary::-webkit-details-marker { display: none; }
+  section.rules summary::after {
+    content: '▼';
+    font-size: 0.9rem;
+    color: var(--accent);
+    transition: transform 0.2s;
+    font-family: 'Inter', sans-serif;
+  }
+  section.rules details[open] summary::after { transform: rotate(180deg); }
+  .rules-body {
+    padding: 4px 22px 22px;
+    border-top: 1px solid var(--border);
+    font-size: 1.05rem;
+    line-height: 1.75;
+  }
+  .rules-body ul { padding-left: 22px; margin: 10px 0; }
+  .rules-body li { margin-bottom: 8px; }
+
+  .rule-highlight {
+    background: var(--warn-bg);
+    color: var(--warn-ink);
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin: 12px 0;
+    font-weight: 600;
+  }
+
+  /* Portion reference table */
+  table.portion-ref {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 1rem;
+  }
+  table.portion-ref th, table.portion-ref td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  table.portion-ref th {
+    background: #f7ecd6;
+    color: var(--accent-dark);
+    font-weight: 700;
+  }
+  table.portion-ref td.mom-col { color: var(--mom); font-weight: 600; }
+  table.portion-ref td.dad-col { color: var(--dad); font-weight: 600; }
+
+  .avoid-list {
+    background: #fef2f2;
+    border-left: 4px solid #dc2626;
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin: 12px 0;
+  }
+  .avoid-list .avoid-title {
+    color: #991b1b;
+    font-weight: 700;
+    margin-bottom: 6px;
+    font-size: 1.05rem;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 2px solid var(--border);
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Tap target sizes for elderly users */
+  @media (max-width: 600px) {
+    html { font-size: 17px; }
+    header h1 { font-size: 1.6rem; }
+    .today-day { font-size: 1.5rem; }
+    details.day summary { font-size: 1.2rem; padding: 16px 18px; }
+    .container { padding: 18px 14px 40px; }
+  }
+</style>
 </head>
 <body>
-  <main class="app">
-    <header class="top">
-      <section class="today-panel" aria-label="आज का खाना">
-        <p class="eyebrow">आज का खाना</p>
-        <h1 id="todayDay">आज</h1>
-        <p class="date" id="todayDate">तारीख</p>
-        <p class="hint">नीचे आज वाला दिन सबसे पहले खुलेगा। “विकल्प” का मतलब है: इनमें से कोई एक चीज़ चुनें, साथ में सब नहीं खाना है। चुना हुआ भोजन पूरे हफ्ते वही रहेगा, जब तक आप खुद “बदलें” नहीं दबाते।</p>
-        <div class="plan-actions" aria-label="Plan actions">
-          <button class="plan-button primary" type="button" id="shuffleWeek">इस हफ्ते नया भोजन बनाएं</button>
-          <button class="plan-button secondary" type="button" id="resetPlan">मूल भोजन वापस लाएं</button>
-        </div>
-        <p class="shuffle-status" id="shuffleStatus" aria-live="polite"></p>
-        <nav class="quick-nav" id="quickNav" aria-label="दिन चुनें"></nav>
-      </section>
-    </header>
+<div class="container">
 
-    <h2 class="section-title">इस हफ्ते का भोजन</h2>
-    <section class="day-list" id="dayList" aria-label="साप्ताहिक भोजन प्लान"></section>
+  <header>
+    <h1>माँ-पापा का खाना</h1>
+    <div class="sub">Weekly Meal Plan &middot; डॉक्टर द्वारा सुझाया गया</div>
+  </header>
 
-    <h2 class="section-title">प्रोटीन के विकल्प और मात्रा</h2>
-    <section class="protein-grid" id="proteinGrid" aria-label="प्रोटीन विकल्प"></section>
+  <div class="today-card">
+    <div class="today-label">आज का दिन / Today</div>
+    <div class="today-day" id="todayDay">—</div>
+    <div class="today-date" id="todayDate">—</div>
+  </div>
 
-    <details class="rules">
-      <summary>
-        जरूरी नियम और सावधानियां
-        <span class="chevron" aria-hidden="true">⌄</span>
-      </summary>
+  <div class="day-list" id="dayList"></div>
+
+  <section class="rules">
+    <details>
+      <summary>ज़रूरी नियम / Important Rules</summary>
       <div class="rules-body">
-        <div class="rule-block">
-          <h3>नमक और BP</h3>
-          <ul>
-            <li>Arun के लिए नमक बहुत कम रखें। अचार, पापड़, नमकीन, chips, soup powder और sauces नहीं।</li>
-            <li>“Low sodium salt” डॉक्टर से पूछे बिना न दें, क्योंकि इसमें potassium हो सकता है।</li>
-          </ul>
+
+        <div class="rule-highlight">
+          पापा के लिए नमक: पूरे दिन में सिर्फ़ <strong>¾ छोटी चम्मच (3 ग्राम)</strong>। सब्ज़ी-दाल अलग निकालकर कम नमक में बनाइए।
         </div>
-        <div class="rule-block">
-          <h3>प्रोटीन का संतुलन</h3>
-          <ul>
-            <li>Sandhya को ताकत बनाए रखने के लिए दिन में 2-3 बार थोड़ा प्रोटीन चाहिए।</li>
-            <li>Arun के लिए प्रोटीन नापकर रखें: एक समय पर दाल या अंडा या paneer या chicken/fish, सब साथ में नहीं।</li>
-            <li>Chicken/fish रोज़ नहीं; हर 2-3 दिन में एक बार काफी है।</li>
-          </ul>
+
+        <h3 style="margin-top: 18px; color: var(--accent-dark);">रोज़ की आदतें</h3>
+        <ul>
+          <li>सुबह उठते ही 1 गिलास गुनगुना पानी</li>
+          <li>माँ: 5 भीगे बादाम + 1 अखरोट रोज़</li>
+          <li>पापा: सिर्फ़ 3 भीगे बादाम</li>
+          <li>चाय दिन में सिर्फ़ 1 बार — चीनी बहुत कम या बिना</li>
+          <li>रात 10 बजे के बाद कुछ नहीं</li>
+          <li>खाने के बाद आधे घंटे टहलना (हफ़्ते में 5 दिन)</li>
+        </ul>
+
+        <h3 style="margin-top: 20px; color: var(--accent-dark);">तेल और नमक</h3>
+        <ul>
+          <li>तेल: एक व्यक्ति के लिए दिन भर में सिर्फ़ <strong>3 छोटी चम्मच</strong> (सरसों या मूंगफली)</li>
+          <li>तलना नहीं है — पूरी, पकौड़े, पराठा नहीं</li>
+          <li>घी सिर्फ़ माँ की रोटी पर आधी चम्मच, पापा को नहीं</li>
+        </ul>
+
+        <h3 style="margin-top: 20px; color: var(--accent-dark);">रोटी और दाल</h3>
+        <ul>
+          <li>पतली फुल्का रोटी। मैदा नहीं।</li>
+          <li>दाल को 30 मिनट भिगोकर, वो पानी फेंक कर, नए पानी में पकाइए (पापा की किडनी के लिए ज़रूरी)</li>
+          <li>पापा के लिए सबसे अच्छी दाल: <strong>मूंग और मसूर</strong>। राजमा, छोले, उड़द कम।</li>
+        </ul>
+
+        <h3 style="margin-top: 20px; color: var(--accent-dark);">हिस्से का हिसाब / Portion Guide</h3>
+        <table class="portion-ref">
+          <thead>
+            <tr><th>चीज़</th><th>माँ</th><th>पापा</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>रोटी</td><td class="mom-col">2 पतली</td><td class="dad-col">2 पतली</td></tr>
+            <tr><td>दाल</td><td class="mom-col">1 कटोरी</td><td class="dad-col">½ कटोरी</td></tr>
+            <tr><td>चिकन / मछली</td><td class="mom-col">100 ग्राम</td><td class="dad-col">70 ग्राम</td></tr>
+            <tr><td>अंडा</td><td class="mom-col">2 पूरे</td><td class="dad-col">1 पूरा + 1 सफ़ेदी</td></tr>
+            <tr><td>पनीर</td><td class="mom-col">50–60 ग्राम</td><td class="dad-col">30–40 ग्राम</td></tr>
+            <tr><td>चावल</td><td class="mom-col">½ कटोरी</td><td class="dad-col">½ कटोरी (हफ़्ते में 2 बार)</td></tr>
+            <tr><td>दही / सलाद</td><td class="mom-col">1 कटोरी</td><td class="dad-col">भरपूर</td></tr>
+          </tbody>
+        </table>
+
+        <div class="avoid-list">
+          <div class="avoid-title">पापा को बिल्कुल नहीं / Avoid for Dad</div>
+          पापड़, अचार, नमकीन, बिस्किट, चिप्स, तला हुआ खाना, मक्खन, क्रीम, केला, नारियल पानी, बहुत ज़्यादा आम / मुसम्मी।
         </div>
-        <div class="rule-block">
-          <h3>रोटी, चावल और sugar</h3>
-          <ul>
-            <li>छोटी फुल्का दें, घी/तेल न लगाएं।</li>
-            <li>चावल हो तो रोटी कम करें। आलू, अरबी, शकरकंद और corn को carb मानें।</li>
-            <li>Juice, मिठाई, honey, गुड़ और sweet chai avoid करें।</li>
-          </ul>
-        </div>
-        <div class="rule-block">
-          <h3>Kidney labs</h3>
-          <ul>
-            <li>Arun की eGFR, creatinine trend, potassium, phosphorus और urine albumin रिपोर्ट के हिसाब से diet बदल सकती है।</li>
-            <li>प्रोटीन powder या supplements doctor/dietitian के बिना न दें।</li>
-          </ul>
-        </div>
+
       </div>
     </details>
+  </section>
 
-    <p class="medical-note">यह घर के लिए practical guide है, prescription नहीं। दवाइयों, sugar readings और kidney reports के हिसाब से doctor या renal dietitian से मात्रा confirm करें।</p>
-  </main>
+  <footer>
+    प्यार से बनाया गया &middot; Made with care<br>
+    <span style="font-size: 0.85rem;">कोई सवाल हो तो डॉक्टर से पूछें</span>
+  </footer>
 
-  <script>
-    const days = [
-      {
-        key: "monday",
-        jsDay: 1,
-        hi: "सोमवार",
-        short: "सोम",
-        note: "शाकाहारी खाना; अंडा सिर्फ जरूरत हो तो",
-        badge: "veg",
-        meals: [
-          {
-            icon: "🌅",
-            name: "नाश्ता",
-            time: "8:00 AM",
-            dish: "बेसन चीला और थोड़ा दही",
-            sandhya: "2 छोटे चीले और 1/2 कटोरी दही। अगर भूख रह जाए तो 1 egg white अलग से ले सकती हैं।",
-            arun: "1-2 छोटे चीले और 2-3 चम्मच दही। नमक कम रखें।",
-            alternatives: ["मूंग दाल चीला", "Egg bhurji और 1 छोटी फुल्का", "वेज दलिया, बिना चीनी"]
-          },
-          {
-            icon: "☀️",
-            name: "दोपहर",
-            time: "1:00 PM",
-            dish: "लौकी चना दाल, छोटी फुल्का और सलाद",
-            sandhya: "1 कटोरी दाल, 2 छोटी फुल्का, और सलाद/सब्जी।",
-            arun: "1/2 कटोरी दाल, 1-2 छोटी फुल्का, और सब्जी की मात्रा ज्यादा रखें।",
-            alternatives: ["मूंग दाल और तोरी", "मसूर दाल और पत्ता गोभी", "अरहर दाल और भिंडी"]
-          },
-          {
-            icon: "☕",
-            name: "शाम",
-            time: "5:00 PM",
-            dish: "भुना चना या unsalted मखाना",
-            sandhya: "1 छोटी मुट्ठी भुना चना या 1 कटोरी मखाना।",
-            arun: "छोटी मात्रा: 1/2 कटोरी मखाना या थोड़ा भुना चना।",
-            alternatives: ["छाछ बिना नमक", "छोटा सेब", "अमरूद"]
-          },
-          {
-            icon: "🌙",
-            name: "रात",
-            time: "8:00 PM",
-            dish: "भिंडी, फुल्का और हल्की egg bhurji",
-            sandhya: "1 पूरा अंडा, 1 egg white, 1-2 फुल्का और भिंडी।",
-            arun: "1 अंडा या 2 egg whites, 1 फुल्का और भिंडी। इस खाने में अलग से दाल/दही नहीं।",
-            alternatives: ["Beans और egg", "Cabbage और egg", "Egg न हो तो थोड़ा paneer"]
-          }
-        ]
-      },
-      {
-        key: "tuesday",
-        jsDay: 2,
-        hi: "मंगलवार",
-        short: "मंगल",
-        note: "रात में chicken/fish रख सकते हैं",
-        badge: "nonveg",
-        meals: [
-          {
-            icon: "🌅",
-            name: "नाश्ता",
-            time: "8:00 AM",
-            dish: "वेज दलिया या सब्जी वाला पोहा",
-            sandhya: "1 कटोरी दलिया/पोहा। सब्जी अलग से नहीं; उसी में मटर कम, गाजर/बीन्स/प्याज थोड़े ज्यादा डालें। जरूरत हो तो 1 उबला अंडा अलग से।",
-            arun: "3/4 कटोरी दलिया/पोहा। मूंगफली कम और नमक कम। अंडा नाश्ते में न दें अगर रात को chicken/fish है।",
-            alternatives: ["दही और 1 छोटी फुल्का", "बेसन चीला", "उबला अंडा और 1 छोटी फुल्का"]
-          },
-          {
-            icon: "☀️",
-            name: "दोपहर",
-            time: "1:00 PM",
-            dish: "गोभी/बीन्स सब्जी, फुल्का और थोड़ा दही",
-            sandhya: "2 छोटी फुल्का, 1/2 कटोरी दही और गोभी/बीन्स की सब्जी।",
-            arun: "1-2 छोटी फुल्का, 1/3 कटोरी दही और सब्जी की मात्रा ज्यादा रखें।",
-            alternatives: ["बैंगन भरता", "लौकी सब्जी", "टिंडा सब्जी"]
-          },
-          {
-            icon: "☕",
-            name: "शाम",
-            time: "5:00 PM",
-            dish: "छाछ बिना नमक या हल्की चाय",
-            sandhya: "1 गिलास छाछ या चाय, बिना चीनी।",
-            arun: "1 छोटा गिलास छाछ, बिना नमक।",
-            alternatives: ["मखाना", "छोटा फल", "थोड़े unsalted peanuts"]
-          },
-          {
-            icon: "🌙",
-            name: "रात",
-            time: "8:00 PM",
-            dish: "Chicken curry, लौकी/तोरी और 1 फुल्का",
-            sandhya: "Chicken 70-75 g cooked, 1-2 छोटी फुल्का और लौकी/तोरी।",
-            arun: "Chicken 50-60 g cooked और 1 छोटी फुल्का। इस खाने में अलग से दाल/दही नहीं।",
-            alternatives: ["Fish curry", "Egg curry", "Non-veg न हो तो मसूर दाल"]
-          }
-        ]
-      },
-      {
-        key: "wednesday",
-        jsDay: 3,
-        hi: "बुधवार",
-        short: "बुध",
-        note: "दाल/पनीर वाला शाकाहारी दिन",
-        badge: "veg",
-        meals: [
-          {
-            icon: "🌅",
-            name: "नाश्ता",
-            time: "8:00 AM",
-            dish: "मूंग दाल चीला",
-            sandhya: "2 छोटे चीले और 2-3 चम्मच दही।",
-            arun: "1-2 छोटे चीले। नमक कम; दही बहुत थोड़ा।",
-            alternatives: ["बेसन चीला", "Egg bhurji", "दही और छोटी रोटी"]
-          },
-          {
-            icon: "☀️",
-            name: "दोपहर",
-            time: "1:00 PM",
-            dish: "मूंग/मसूर दाल, पत्ता गोभी/बीन्स और फुल्का",
-            sandhya: "1 कटोरी दाल, 2 छोटी फुल्का और पत्ता गोभी/बीन्स।",
-            arun: "1/2 कटोरी दाल, 1-2 छोटी फुल्का और सब्जी की मात्रा ज्यादा रखें।",
-            alternatives: ["लौकी दाल", "हल्की तड़का दाल", "Mixed veg और छोटी दाल"]
-          },
-          {
-            icon: "☕",
-            name: "शाम",
-            time: "5:00 PM",
-            dish: "छोटा फल",
-            sandhya: "1 छोटा सेब, अमरूद या पपीता।",
-            arun: "1 छोटा फल; juice नहीं।",
-            alternatives: ["मखाना", "छाछ", "भुना चना"]
-          },
-          {
-            icon: "🌙",
-            name: "रात",
-            time: "8:00 PM",
-            dish: "हल्का पालक पनीर और फुल्का",
-            sandhya: "Paneer 50-60 g और 1-2 फुल्का।",
-            arun: "Paneer 30-40 g और 1 फुल्का। साथ में दाल की पूरी कटोरी नहीं।",
-            alternatives: ["लौकी पनीर", "Egg bhurji", "Paneer न हो तो 1/2 कटोरी दाल"]
-          }
-        ]
-      },
-      {
-        key: "thursday",
-        jsDay: 4,
-        hi: "गुरुवार",
-        short: "गुरु",
-        note: "रात में fish/chicken रख सकते हैं",
-        badge: "nonveg",
-        meals: [
-          {
-            icon: "🌅",
-            name: "नाश्ता",
-            time: "8:00 AM",
-            dish: "दही और छोटी मेथी रोटी",
-            sandhya: "1 छोटी मेथी रोटी और 1/2 कटोरी दही।",
-            arun: "1 छोटी मेथी रोटी और 1/3 कटोरी दही। नमक कम।",
-            alternatives: ["सब्जी पोहा", "वेज दलिया", "मूंग चीला"]
-          },
-          {
-            icon: "☀️",
-            name: "दोपहर",
-            time: "1:00 PM",
-            dish: "लौकी/तुरई, फुल्का और छोटी कटोरी दाल",
-            sandhya: "3/4 से 1 कटोरी दाल, 2 छोटी फुल्का और लौकी/तुरई।",
-            arun: "1/2 कटोरी दाल, 1-2 छोटी फुल्का और सब्जी की मात्रा ज्यादा रखें।",
-            alternatives: ["टिंडा", "भिंडी", "पत्ता गोभी"]
-          },
-          {
-            icon: "☕",
-            name: "शाम",
-            time: "5:00 PM",
-            dish: "मखाना या भुना चना",
-            sandhya: "1 कटोरी मखाना या 1 छोटी मुट्ठी चना।",
-            arun: "1/2 कटोरी मखाना या थोड़ा चना।",
-            alternatives: ["छोटा फल", "चाय बिना चीनी", "छाछ बिना नमक"]
-          },
-          {
-            icon: "🌙",
-            name: "रात",
-            time: "8:00 PM",
-            dish: "Fish curry, टिंडा/लौकी और फुल्का",
-            sandhya: "Fish 70-75 g cooked, 1-2 छोटी फुल्का और टिंडा/लौकी।",
-            arun: "Fish 50-60 g cooked और 1 छोटी फुल्का। इस खाने में अलग से दाल/पनीर नहीं।",
-            alternatives: ["Chicken curry", "Egg curry", "Non-veg न हो तो मसूर दाल"]
-          }
-        ]
-      },
-      {
-        key: "friday",
-        jsDay: 5,
-        hi: "शुक्रवार",
-        short: "शुक्र",
-        note: "सरल शाकाहारी दिन",
-        badge: "veg",
-        meals: [
-          {
-            icon: "🌅",
-            name: "नाश्ता",
-            time: "8:00 AM",
-            dish: "बेसन या मूंग चीला",
-            sandhya: "2 छोटे चीले और थोड़ा दही।",
-            arun: "1-2 छोटे चीले, नमक कम।",
-            alternatives: ["दही-रोटी", "वेज दलिया", "उबला अंडा और फुल्का"]
-          },
-          {
-            icon: "☀️",
-            name: "दोपहर",
-            time: "1:00 PM",
-            dish: "बैंगन भरता या भिंडी, फुल्का और थोड़ा दही",
-            sandhya: "2 छोटी फुल्का, 1/2 कटोरी दही और बैंगन/भिंडी।",
-            arun: "1-2 छोटी फुल्का, 1/3 कटोरी दही और बैंगन/भिंडी। दही ज्यादा नहीं।",
-            alternatives: ["लौकी", "बीन्स", "पत्ता गोभी"]
-          },
-          {
-            icon: "☕",
-            name: "शाम",
-            time: "5:00 PM",
-            dish: "चाय और थोड़ी बिना नमक मूंगफली",
-            sandhya: "बिना चीनी चाय और 8-10 दाने मूंगफली।",
-            arun: "बिना चीनी चाय और 5-6 दाने मूंगफली।",
-            alternatives: ["मखाना", "छोटा फल", "भुना चना"]
-          },
-          {
-            icon: "🌙",
-            name: "रात",
-            time: "8:00 PM",
-            dish: "मसूर दाल, cabbage/beans और फुल्का",
-            sandhya: "1 कटोरी दाल, 1-2 छोटी फुल्का और cabbage/beans।",
-            arun: "1/2 कटोरी दाल, 1 छोटी फुल्का और सब्जी की मात्रा ज्यादा रखें।",
-            alternatives: ["मूंग दाल", "अरहर दाल", "Egg bhurji"]
-          }
-        ]
-      },
-      {
-        key: "saturday",
-        jsDay: 6,
-        hi: "शनिवार",
-        short: "शनि",
-        note: "हल्का प्रोटीन दिन",
-        badge: "veg",
-        meals: [
-          {
-            icon: "🌅",
-            name: "नाश्ता",
-            time: "8:00 AM",
-            dish: "Egg bhurji या दही-रोटी",
-            sandhya: "अगर egg लें: 1 अंडा और 1 egg white। अगर दही-रोटी लें: 1 छोटी रोटी और 1/2 कटोरी दही।",
-            arun: "अगर egg लें: 1 अंडा या 2 egg whites। अगर दही-रोटी लें: 1 छोटी रोटी और 1/3 कटोरी दही।",
-            alternatives: ["बेसन चीला", "पोहा", "वेज दलिया"]
-          },
-          {
-            icon: "☀️",
-            name: "दोपहर",
-            time: "1:00 PM",
-            dish: "कम नमक वाली कढ़ी, लौकी/तोरी और फुल्का",
-            sandhya: "1 कटोरी कढ़ी, 1-2 छोटी फुल्का और लौकी/तोरी।",
-            arun: "1/2 कटोरी कढ़ी और 1 छोटी फुल्का। साथ में दाल की पूरी कटोरी नहीं।",
-            alternatives: ["दाल और सब्जी", "दही और सब्जी", "Mixed veg"]
-          },
-          {
-            icon: "☕",
-            name: "शाम",
-            time: "5:00 PM",
-            dish: "फल या छाछ",
-            sandhya: "1 छोटा फल या 1 गिलास छाछ।",
-            arun: "1 छोटा फल या छोटा गिलास छाछ, बिना नमक।",
-            alternatives: ["मखाना", "भुना चना", "चाय बिना चीनी"]
-          },
-          {
-            icon: "🌙",
-            name: "रात",
-            time: "8:00 PM",
-            dish: "सब्जी, फुल्का और मूंग दाल",
-            sandhya: "1 कटोरी मूंग दाल, 1-2 छोटी फुल्का और सब्जी।",
-            arun: "1/2 कटोरी मूंग दाल, 1 छोटी फुल्का और सब्जी।",
-            alternatives: ["Egg curry", "थोड़ा paneer", "लौकी दाल"]
-          }
-        ]
-      },
-      {
-        key: "sunday",
-        jsDay: 0,
-        hi: "रविवार",
-        short: "रवि",
-        note: "नॉन-वेज सिर्फ विकल्प है",
-        badge: "nonveg",
-        meals: [
-          {
-            icon: "🌅",
-            name: "नाश्ता",
-            time: "8:30 AM",
-            dish: "सब्जी वाला पोहा",
-            sandhya: "1 कटोरी पोहा। सब्जी अलग से नहीं; पोहे में ही प्याज/गाजर/बीन्स थोड़े ज्यादा डालें। जरूरत हो तो 1 उबला अंडा अलग से।",
-            arun: "3/4 कटोरी पोहा। मूंगफली कम और नमक कम।",
-            alternatives: ["चीला", "दही-रोटी", "Egg और फुल्का"]
-          },
-          {
-            icon: "☀️",
-            name: "दोपहर",
-            time: "1:30 PM",
-            dish: "Chicken/fish या चना दाल, भिंडी/लौकी और फुल्का",
-            sandhya: "अगर non-veg बना है: 70-75 g cooked। अगर vegetarian है: 1 कटोरी दाल। साथ में फुल्का और सब्जी।",
-            arun: "अगर non-veg बना है: 50-60 g cooked। अगर vegetarian है: 1/2 कटोरी दाल। साथ में 1 फुल्का और सब्जी।",
-            alternatives: ["मसूर दाल", "अरहर दाल", "Egg curry"]
-          },
-          {
-            icon: "☕",
-            name: "शाम",
-            time: "5:00 PM",
-            dish: "दही या फल",
-            sandhya: "1/2 कटोरी दही या 1 छोटा फल।",
-            arun: "1/3 कटोरी दही या 1 छोटा फल। दोनों साथ में नहीं अगर sugar high हो।",
-            alternatives: ["छाछ", "मखाना", "भुना चना"]
-          },
-          {
-            icon: "🌙",
-            name: "रात",
-            time: "8:00 PM",
-            dish: "हल्का dinner: सब्जी soup, फुल्का और छोटा प्रोटीन",
-            sandhya: "1 फुल्का, 1 कटोरी soup, और इनमें से एक: paneer 50 g या 1 अंडा।",
-            arun: "1 फुल्का, 1 कटोरी soup, और इनमें से एक: paneer 30 g या 2 egg whites या 1/2 कटोरी दाल।",
-            alternatives: ["Paneer छोटा", "Egg whites", "1/2 कटोरी दाल"]
-          }
-        ]
-      }
-    ];
+</div>
 
-    const foodLibrary = {
-      breakfast: [
+<script>
+  const days = [
+    {
+      key: 'mon', hi: 'सोमवार', en: 'Monday',
+      meals: [
         {
-          id: "bf-besan-chilla",
-          dish: "बेसन चीला और थोड़ा दही",
-          sandhya: "2 छोटे चीले और 1/2 कटोरी दही। अगर भूख रह जाए तो 1 egg white अलग से ले सकती हैं।",
-          arun: "1-2 छोटे चीले और 2-3 चम्मच दही। नमक कम रखें।",
-          note: "यह नाश्ते का पूरा विकल्प है। अलग से रोटी/पोहा साथ में नहीं।"
+          icon: '🌅', hi: 'नाश्ता', en: 'Breakfast', time: 'सुबह 8–9 बजे',
+          desc: 'उबले अंडे + 1 रोटी + खीरा',
+          mom: '2 पूरे अंडे + 1 रोटी',
+          dad: '1 पूरा अंडा + 1 अंडे की सफ़ेदी + 1 रोटी'
         },
         {
-          id: "bf-moong-chilla",
-          dish: "मूंग दाल चीला",
-          sandhya: "2 छोटे चीले और 2-3 चम्मच दही।",
-          arun: "1-2 छोटे चीले। नमक कम; दही बहुत थोड़ा।",
-          note: "यह बेसन चीले की जगह ले सकता है।"
+          icon: '☀️', hi: 'दोपहर का खाना', en: 'Lunch', time: '1–2 बजे',
+          desc: 'मूंग दाल + लौकी की सब्ज़ी + 2 रोटी + दही',
+          mom: 'दाल: 1 कटोरी',
+          dad: 'दाल: ½ कटोरी (भिगोकर, पानी बदलकर)'
         },
         {
-          id: "bf-veg-dalia",
-          dish: "वेज दलिया",
-          sandhya: "1 कटोरी दलिया। गाजर/बीन्स/प्याज दलिया में ही डालें। जरूरत हो तो 1 उबला अंडा अलग से।",
-          arun: "3/4 कटोरी दलिया। नमक कम। अंडा न दें अगर रात को chicken/fish है।",
-          note: "सब्जी अलग से नहीं; दलिया में ही सब्जी डालनी है।"
+          icon: '🍵', hi: 'शाम का नाश्ता', en: 'Snack', time: 'शाम 5 बजे',
+          desc: 'चाय + हल्का नाश्ता',
+          mom: 'भुने चने — 1 मुट्ठी',
+          dad: 'खाखरा — 1 (बिना नमक)'
         },
         {
-          id: "bf-veg-poha",
-          dish: "सब्जी वाला पोहा",
-          sandhya: "1 कटोरी पोहा। प्याज/गाजर/बीन्स पोहे में ही डालें। जरूरत हो तो 1 उबला अंडा अलग से।",
-          arun: "3/4 कटोरी पोहा। मूंगफली कम और नमक कम।",
-          note: "यह पूरा नाश्ता है। साथ में अलग रोटी नहीं।"
-        },
-        {
-          id: "bf-curd-roti",
-          dish: "दही और छोटी रोटी",
-          sandhya: "1 छोटी रोटी और 1/2 कटोरी दही।",
-          arun: "1 छोटी रोटी और 1/3 कटोरी दही। नमक कम।",
-          note: "हल्का नाश्ता चाहिए तो यह रखें।"
-        },
-        {
-          id: "bf-methi-roti-curd",
-          dish: "छोटी मेथी रोटी और दही",
-          sandhya: "1 छोटी मेथी रोटी और 1/2 कटोरी दही।",
-          arun: "1 छोटी मेथी रोटी और 1/3 कटोरी दही। नमक कम।",
-          note: "मेथी रोटी पर घी/तेल न लगाएं।"
-        },
-        {
-          id: "bf-egg-bhurji",
-          dish: "Egg bhurji और 1 छोटी फुल्का",
-          sandhya: "1 अंडा और 1 egg white की bhurji, साथ में 1 छोटी फुल्का।",
-          arun: "1 अंडा या 2 egg whites की bhurji, साथ में 1 छोटी फुल्का।",
-          note: "अगर उसी दिन dinner में chicken/fish है तो Arun के लिए यह विकल्प कम रखें।"
-        },
-        {
-          id: "bf-boiled-egg-roti",
-          dish: "उबला अंडा और छोटी फुल्का",
-          sandhya: "1 उबला अंडा, 1 egg white और 1 छोटी फुल्का।",
-          arun: "1 उबला अंडा या 2 egg whites और 1 छोटी फुल्का।",
-          note: "तेल नहीं लगता, इसलिए practical विकल्प है।"
-        }
-      ],
-      lunch: [
-        {
-          id: "lu-lauki-chana-dal",
-          dish: "लौकी चना दाल, छोटी फुल्का और सलाद",
-          sandhya: "1 कटोरी दाल, 2 छोटी फुल्का, और सलाद/सब्जी।",
-          arun: "1/2 कटोरी दाल, 1-2 छोटी फुल्का, और सब्जी की मात्रा ज्यादा रखें।",
-          note: "यह पूरा lunch है। अलग से दही/पनीर जोड़ना जरूरी नहीं।"
-        },
-        {
-          id: "lu-moong-tori",
-          dish: "मूंग दाल, तोरी और फुल्का",
-          sandhya: "1 कटोरी मूंग दाल, 2 छोटी फुल्का और तोरी।",
-          arun: "1/2 कटोरी मूंग दाल, 1-2 छोटी फुल्का और तोरी ज्यादा।",
-          note: "हल्का और kidney-friendly विकल्प।"
-        },
-        {
-          id: "lu-masoor-cabbage",
-          dish: "मसूर दाल, पत्ता गोभी और फुल्का",
-          sandhya: "1 कटोरी मसूर दाल, 1-2 छोटी फुल्का और पत्ता गोभी।",
-          arun: "1/2 कटोरी मसूर दाल, 1 छोटी फुल्का और पत्ता गोभी ज्यादा।",
-          note: "दाल की मात्रा Arun के लिए नापकर रखें।"
-        },
-        {
-          id: "lu-arhar-bhindi",
-          dish: "अरहर दाल, भिंडी और फुल्का",
-          sandhya: "3/4 से 1 कटोरी अरहर दाल, 2 छोटी फुल्का और भिंडी।",
-          arun: "1/2 कटोरी अरहर दाल, 1-2 छोटी फुल्का और भिंडी।",
-          note: "कम तेल में भिंडी बनाएं।"
-        },
-        {
-          id: "lu-gobhi-curd",
-          dish: "गोभी/बीन्स सब्जी, फुल्का और थोड़ा दही",
-          sandhya: "2 छोटी फुल्का, 1/2 कटोरी दही और गोभी/बीन्स की सब्जी।",
-          arun: "1-2 छोटी फुल्का, 1/3 कटोरी दही और सब्जी की मात्रा ज्यादा रखें।",
-          note: "यह दाल वाला lunch नहीं है; दही ही छोटा protein रहेगा।"
-        },
-        {
-          id: "lu-baingan-curd",
-          dish: "बैंगन भरता या भिंडी, फुल्का और थोड़ा दही",
-          sandhya: "2 छोटी फुल्का, 1/2 कटोरी दही और बैंगन/भिंडी।",
-          arun: "1-2 छोटी फुल्का, 1/3 कटोरी दही और बैंगन/भिंडी। दही ज्यादा नहीं।",
-          note: "भरता कम तेल में बनाएं।"
-        },
-        {
-          id: "lu-kadhi-lauki",
-          dish: "कम नमक वाली कढ़ी, लौकी/तोरी और फुल्का",
-          sandhya: "1 कटोरी कढ़ी, 1-2 छोटी फुल्का और लौकी/तोरी।",
-          arun: "1/2 कटोरी कढ़ी और 1 छोटी फुल्का। साथ में दाल की पूरी कटोरी नहीं।",
-          note: "कढ़ी हो तो दाल अलग से न रखें।"
-        },
-        {
-          id: "lu-chicken-sabzi",
-          dish: "Chicken curry, लौकी/तोरी और फुल्का",
-          sandhya: "Chicken 70-75 g cooked, 1-2 छोटी फुल्का और लौकी/तोरी।",
-          arun: "Chicken 50-60 g cooked और 1 छोटी फुल्का। इस खाने में अलग से दाल/दही नहीं।",
-          note: "सिर्फ नॉन-वेज वाले दिन रखें।",
-          nonveg: true
-        },
-        {
-          id: "lu-fish-sabzi",
-          dish: "Fish curry, टिंडा/लौकी और फुल्का",
-          sandhya: "Fish 70-75 g cooked, 1-2 छोटी फुल्का और टिंडा/लौकी।",
-          arun: "Fish 50-60 g cooked और 1 छोटी फुल्का। इस खाने में अलग से दाल/पनीर नहीं।",
-          note: "Fried fish नहीं; curry/steamed style बेहतर।",
-          nonveg: true
-        }
-      ],
-      snack: [
-        {
-          id: "sn-roasted-chana",
-          dish: "भुना चना",
-          sandhya: "1 छोटी मुट्ठी भुना चना।",
-          arun: "थोड़ा भुना चना। नमक न डालें।",
-          note: "यह शाम का snack है, पूरा dinner नहीं।"
-        },
-        {
-          id: "sn-makhana",
-          dish: "बिना नमक मखाना",
-          sandhya: "1 कटोरी roasted मखाना।",
-          arun: "1/2 कटोरी roasted मखाना।",
-          note: "हल्का भूनें, नमक न डालें।"
-        },
-        {
-          id: "sn-buttermilk",
-          dish: "छाछ बिना नमक",
-          sandhya: "1 गिलास छाछ।",
-          arun: "1 छोटा गिलास छाछ, बिना नमक।",
-          note: "भुना जीरा डाल सकते हैं, नमक नहीं।"
-        },
-        {
-          id: "sn-small-fruit",
-          dish: "छोटा फल",
-          sandhya: "1 छोटा सेब, अमरूद, पपीता या नाशपाती।",
-          arun: "1 छोटा फल। Juice नहीं।",
-          note: "फल पूरा खाएं, juice नहीं।"
-        },
-        {
-          id: "sn-tea-peanuts",
-          dish: "चाय और थोड़ी बिना नमक मूंगफली",
-          sandhya: "बिना चीनी चाय और 8-10 दाने मूंगफली।",
-          arun: "बिना चीनी चाय और 5-6 दाने मूंगफली।",
-          note: "मूंगफली ज्यादा नहीं।"
-        },
-        {
-          id: "sn-tea-only",
-          dish: "हल्की चाय बिना चीनी",
-          sandhya: "1 कप चाय बिना चीनी। भूख हो तो 1 छोटा फल।",
-          arun: "1 छोटा कप चाय बिना चीनी।",
-          note: "बिस्कुट/नमकीन साथ में न रखें।"
-        }
-      ],
-      dinner: [
-        {
-          id: "di-bhindi-egg",
-          dish: "भिंडी, फुल्का और हल्की egg bhurji",
-          sandhya: "1 पूरा अंडा, 1 egg white, 1-2 फुल्का और भिंडी।",
-          arun: "1 अंडा या 2 egg whites, 1 फुल्का और भिंडी। इस खाने में अलग से दाल/दही नहीं।",
-          note: "Egg वाला dinner है, दाल साथ में न जोड़ें।"
-        },
-        {
-          id: "di-palak-paneer",
-          dish: "हल्का पालक पनीर और फुल्का",
-          sandhya: "Paneer 50-60 g और 1-2 फुल्का।",
-          arun: "Paneer 30-40 g और 1 फुल्का। साथ में दाल की पूरी कटोरी नहीं।",
-          note: "Paneer रोज नहीं।"
-        },
-        {
-          id: "di-masoor-cabbage",
-          dish: "मसूर दाल, cabbage/beans और फुल्का",
-          sandhya: "1 कटोरी दाल, 1-2 छोटी फुल्का और cabbage/beans।",
-          arun: "1/2 कटोरी दाल, 1 छोटी फुल्का और सब्जी की मात्रा ज्यादा रखें।",
-          note: "Simple vegetarian dinner।"
-        },
-        {
-          id: "di-moong-sabzi",
-          dish: "सब्जी, फुल्का और मूंग दाल",
-          sandhya: "1 कटोरी मूंग दाल, 1-2 छोटी फुल्का और सब्जी।",
-          arun: "1/2 कटोरी मूंग दाल, 1 छोटी फुल्का और सब्जी।",
-          note: "हल्का dinner चाहिए तो अच्छा।"
-        },
-        {
-          id: "di-lauki-dal",
-          dish: "लौकी दाल और फुल्का",
-          sandhya: "1 कटोरी लौकी दाल और 1-2 छोटी फुल्का।",
-          arun: "1/2 कटोरी लौकी दाल और 1 छोटी फुल्का।",
-          note: "दाल और सब्जी एक साथ बन जाती है।"
-        },
-        {
-          id: "di-soup-protein",
-          dish: "सब्जी soup, फुल्का और छोटा प्रोटीन",
-          sandhya: "1 फुल्का, 1 कटोरी soup, और इनमें से एक: paneer 50 g या 1 अंडा।",
-          arun: "1 फुल्का, 1 कटोरी soup, और इनमें से एक: paneer 30 g या 2 egg whites या 1/2 कटोरी दाल।",
-          note: "हल्की रात के लिए।"
-        },
-        {
-          id: "di-chicken-sabzi",
-          dish: "Chicken curry, लौकी/तोरी और 1 फुल्का",
-          sandhya: "Chicken 70-75 g cooked, 1-2 छोटी फुल्का और लौकी/तोरी।",
-          arun: "Chicken 50-60 g cooked और 1 छोटी फुल्का। इस खाने में अलग से दाल/दही नहीं।",
-          note: "हर 2-3 दिन से ज्यादा नहीं।",
-          nonveg: true
-        },
-        {
-          id: "di-fish-sabzi",
-          dish: "Fish curry, टिंडा/लौकी और फुल्का",
-          sandhya: "Fish 70-75 g cooked, 1-2 छोटी फुल्का और टिंडा/लौकी।",
-          arun: "Fish 50-60 g cooked और 1 छोटी फुल्का। इस खाने में अलग से दाल/पनीर नहीं।",
-          note: "Fried fish नहीं।",
-          nonveg: true
-        },
-        {
-          id: "di-egg-curry",
-          dish: "Egg curry, भिंडी/बीन्स और फुल्का",
-          sandhya: "1 अंडा और 1 egg white की curry, 1-2 फुल्का और सब्जी।",
-          arun: "1 अंडा या 2 egg whites की curry, 1 फुल्का और सब्जी।",
-          note: "दाल साथ में न रखें।"
+          icon: '🌙', hi: 'रात का खाना', en: 'Dinner', time: '7–8 बजे',
+          desc: 'पनीर भुर्जी (कम तेल) + 2 फुल्का + सलाद',
+          mom: 'पनीर: 50 ग्राम',
+          dad: 'पनीर: 30 ग्राम'
         }
       ]
-    };
-
-    const proteinOptions = [
-      {
-        title: "दाल",
-        sandhya: "1 कटोरी cooked दाल",
-        arun: "1/2 कटोरी cooked दाल",
-        note: "मूंग, मसूर, अरहर, चना दाल बदल-बदलकर दें। Arun को उसी खाने में paneer/egg/non-veg के साथ पूरी कटोरी दाल न दें।"
-      },
-      {
-        title: "अंडा",
-        sandhya: "1 पूरा अंडा और 1 egg white",
-        arun: "1 पूरा अंडा या 2 egg whites",
-        note: "उबला अंडा, bhurji या light curry। तेल और नमक कम।"
-      },
-      {
-        title: "Paneer",
-        sandhya: "50-60 g",
-        arun: "30-40 g",
-        note: "रोज नहीं। पालक/लौकी/तोरी के साथ हल्का बनाएं।"
-      },
-      {
-        title: "दही / कढ़ी",
-        sandhya: "1/2 कटोरी दही या 1 कटोरी कढ़ी",
-        arun: "1/3 कटोरी दही या 1/2 कटोरी कढ़ी",
-        note: "बिना अतिरिक्त नमक। कढ़ी के साथ दाल की पूरी कटोरी न रखें।"
-      },
-      {
-        title: "Chicken",
-        sandhya: "70-75 g cooked",
-        arun: "50-60 g cooked",
-        note: "हर 2-3 दिन। Skinless, कम तेल, कम नमक। Gravy पतली रखें।"
-      },
-      {
-        title: "Fish",
-        sandhya: "70-75 g cooked",
-        arun: "50-60 g cooked",
-        note: "हर 2-3 दिन। Fried fish नहीं; curry/steamed style बेहतर।"
-      },
-      {
-        title: "बेसन / मूंग चीला",
-        sandhya: "2 छोटे चीले",
-        arun: "1-2 छोटे चीले",
-        note: "कम तेल पर बनाएं। Stuffing में प्याज, धनिया, लौकी, मेथी डाल सकते हैं।"
-      },
-      {
-        title: "भुना चना / मखाना",
-        sandhya: "1 छोटी मुट्ठी चना या 1 कटोरी मखाना",
-        arun: "थोड़ा चना या 1/2 कटोरी मखाना",
-        note: "बिना नमक रखें। ये snack है, मुख्य प्रोटीन खाना नहीं।"
-      },
-      {
-        title: "Sprouts",
-        sandhya: "1/2 कटोरी, हल्का steamed",
-        arun: "छोटी मात्रा, सिर्फ अगर digestion ठीक हो",
-        note: "Raw sprouts elderly में गैस/इन्फेक्शन risk दे सकते हैं; हल्का steam करना बेहतर।"
-      }
-    ];
-
-    const STORAGE_KEY = "parentsMealPlanSelectionsV2";
-    const WEEK_KEY = "parentsMealPlanWeekV2";
-    const todayIndex = getIndiaDayIndex();
-    const currentWeekKey = getIndiaWeekKey();
-    let selectedMeals = loadSelectedMeals();
-    applyWeeklyRotationIfNeeded();
-    const orderedDays = [...days.filter(day => day.jsDay === todayIndex), ...days.filter(day => day.jsDay !== todayIndex)];
-
-    renderToday();
-    renderQuickNav();
-    renderDays();
-    renderProteinOptions();
-    bindAlternativeButtons();
-
-    function getIndiaDayIndex() {
-      const short = new Intl.DateTimeFormat("en-US", {
-        weekday: "short",
-        timeZone: "Asia/Kolkata"
-      }).format(new Date());
-      return { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }[short];
-    }
-
-    function getIndiaWeekKey() {
-      const indiaDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
-      const yearStart = new Date(indiaDate.getFullYear(), 0, 1);
-      const dayOfYear = Math.floor((indiaDate - yearStart) / 86400000) + 1;
-      const week = Math.ceil((dayOfYear + yearStart.getDay()) / 7);
-      return `${indiaDate.getFullYear()}-${String(week).padStart(2, "0")}`;
-    }
-
-    function loadSelectedMeals() {
-      try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-      } catch {
-        return {};
-      }
-    }
-
-    function saveSelectedMeals() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(selectedMeals));
-      localStorage.setItem(WEEK_KEY, currentWeekKey);
-    }
-
-    function applyWeeklyRotationIfNeeded() {
-      const savedWeek = localStorage.getItem(WEEK_KEY);
-      if (savedWeek === currentWeekKey) return;
-      selectedMeals = createWeeklySelections(currentWeekKey);
-      saveSelectedMeals();
-      setStatus("इस हफ्ते के लिए नया भोजन अपने आप बन गया है।");
-    }
-
-    function createWeeklySelections(seed) {
-      const selections = {};
-      days.forEach(day => {
-        day.meals.forEach((meal, mealIndex) => {
-          const type = getMealType(mealIndex);
-          const candidates = getAllowedItems(type, day, mealIndex);
-          const selected = candidates[seededIndex(`${seed}-${day.key}-${mealIndex}`, candidates.length)];
-          selections[getMealSlotKey(day.key, mealIndex)] = selected.id;
-        });
-      });
-      return selections;
-    }
-
-    function getMealType(mealIndex) {
-      return ["breakfast", "lunch", "snack", "dinner"][mealIndex];
-    }
-
-    function getMealSlotKey(dayKey, mealIndex) {
-      return `${dayKey}-${mealIndex}`;
-    }
-
-    function getAllLibraryItems() {
-      return Object.values(foodLibrary).flat();
-    }
-
-    function findLibraryItem(id) {
-      return getAllLibraryItems().find(item => item.id === id);
-    }
-
-    function getAllowedItems(type, day, mealIndex) {
-      const items = foodLibrary[type] || [];
-      const nonVegAllowed = day.badge === "nonveg" && (mealIndex === 3 || (day.key === "sunday" && mealIndex === 1));
-      if (type === "lunch" || type === "dinner") {
-        return items.filter(item => nonVegAllowed || !item.nonveg);
-      }
-      return items;
-    }
-
-    function mealToDefaultItem(meal) {
-      return {
-        id: "default",
-        dish: meal.dish,
-        sandhya: meal.sandhya,
-        arun: meal.arun,
-        note: "यह मूल भोजन है।"
-      };
-    }
-
-    function getCurrentMealItem(day, meal, mealIndex) {
-      const selectedId = selectedMeals[getMealSlotKey(day.key, mealIndex)];
-      return findLibraryItem(selectedId) || mealToDefaultItem(meal);
-    }
-
-    function getAlternativeItems(day, mealIndex, currentId) {
-      const type = getMealType(mealIndex);
-      const candidates = getAllowedItems(type, day, mealIndex).filter(item => item.id !== currentId);
-      return candidates.slice(0, 4);
-    }
-
-    function chooseMeal(dayKey, mealIndex, itemId) {
-      selectedMeals[getMealSlotKey(dayKey, mealIndex)] = itemId;
-      saveSelectedMeals();
-      rerenderPreservingOpenDays("बदल दिया: अब यह मुख्य खाना है।");
-    }
-
-    function shuffleMeal(dayKey, mealIndex) {
-      const day = days.find(item => item.key === dayKey);
-      const type = getMealType(mealIndex);
-      const current = selectedMeals[getMealSlotKey(dayKey, mealIndex)];
-      const candidates = getAllowedItems(type, day, mealIndex).filter(item => item.id !== current);
-      const selected = candidates[Math.floor(Math.random() * candidates.length)];
-      chooseMeal(dayKey, mealIndex, selected.id);
-    }
-
-    function shuffleWholeWeek() {
-      const selections = {};
-      days.forEach(day => {
-        day.meals.forEach((meal, mealIndex) => {
-          const candidates = getAllowedItems(getMealType(mealIndex), day, mealIndex);
-          const selected = candidates[Math.floor(Math.random() * candidates.length)];
-          selections[getMealSlotKey(day.key, mealIndex)] = selected.id;
-        });
-      });
-      selectedMeals = selections;
-      saveSelectedMeals();
-      rerenderPreservingOpenDays("इस हफ्ते का नया भोजन बन गया। नॉन-वेज अभी भी सिर्फ सही दिनों में रहेगा।");
-    }
-
-    function resetPlan() {
-      selectedMeals = {};
-      saveSelectedMeals();
-      rerenderPreservingOpenDays("मूल भोजन वापस आ गया।");
-    }
-
-    function rerenderPreservingOpenDays(message) {
-      const openKeys = new Set([...document.querySelectorAll(".day-card[open]")].map(card => card.id));
-      renderDays(openKeys);
-      bindAlternativeButtons();
-      setStatus(message);
-    }
-
-    function setStatus(message) {
-      const status = document.getElementById("shuffleStatus");
-      if (status) status.textContent = message || "";
-    }
-
-    function seededIndex(input, max) {
-      if (!max) return 0;
-      let hash = 0;
-      for (let i = 0; i < input.length; i++) {
-        hash = ((hash << 5) - hash + input.charCodeAt(i)) | 0;
-      }
-      return Math.abs(hash) % max;
-    }
-
-    function renderToday() {
-      const today = days.find(day => day.jsDay === todayIndex);
-      const formattedDate = new Intl.DateTimeFormat("hi-IN", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-        timeZone: "Asia/Kolkata"
-      }).format(new Date());
-      document.getElementById("todayDay").textContent = `आज ${today.hi}`;
-      document.getElementById("todayDate").textContent = formattedDate;
-    }
-
-    function renderQuickNav() {
-      const nav = document.getElementById("quickNav");
-      nav.innerHTML = orderedDays.map(day => `
-        <a href="#${day.key}" class="${day.jsDay === todayIndex ? "today-link" : ""}" aria-label="${day.hi} पर जाएं">${day.short}</a>
-      `).join("");
-    }
-
-    function renderDays(openKeys = null) {
-      const list = document.getElementById("dayList");
-      list.innerHTML = orderedDays.map(day => {
-        const isToday = day.jsDay === todayIndex;
-        const shouldOpen = isToday || (openKeys && openKeys.has(day.key));
-        const badge = day.badge === "nonveg"
-          ? '<span class="nonveg-badge">नॉन-वेज विकल्प</span>'
-          : '<span class="veg-badge">शाकाहारी</span>';
-        return `
-          <details class="day-card ${isToday ? "today" : ""}" id="${day.key}" ${shouldOpen ? "open" : ""}>
-            <summary class="day-summary">
-              <div>
-                <div class="day-title">
-                  <span class="day-name">${day.hi}</span>
-                  ${isToday ? '<span class="today-badge">आज</span>' : ""}
-                  ${badge}
-                </div>
-                <div class="summary-sub">${day.note}</div>
-              </div>
-              <span class="chevron" aria-hidden="true">⌄</span>
-            </summary>
-            <div class="meals">
-              ${day.meals.map((meal, mealIndex) => renderMeal(day, meal, mealIndex)).join("")}
-            </div>
-          </details>
-        `;
-      }).join("");
-    }
-
-    function renderMeal(day, meal, mealIndex) {
-      const altId = `${day.key}-alt-${mealIndex}`;
-      const current = getCurrentMealItem(day, meal, mealIndex);
-      const alternatives = getAlternativeItems(day, mealIndex, current.id);
-      return `
-        <article class="meal">
-          <div class="meal-head">
-            <div class="icon" aria-hidden="true">${meal.icon}</div>
-            <div>
-              <div class="meal-name">${meal.name}</div>
-              <div class="meal-time">${meal.time}</div>
-            </div>
-          </div>
-          <p class="dish"><strong>आज का मुख्य खाना:</strong> ${current.dish}</p>
-          <div class="portion-row">
-            <div class="portion sandhya">
-              <p class="portion-label">Sandhya के लिए</p>
-              <div class="portion-text">${current.sandhya}</div>
-              <small>Sugar control और ताकत</small>
-            </div>
-            <div class="portion arun">
-              <p class="portion-label">Arun के लिए</p>
-              <div class="portion-text">${current.arun}</div>
-              <small>Sugar, BP और kidney सावधानी</small>
-            </div>
-          </div>
-          <div class="meal-action-row">
-            <button class="alt-toggle" type="button" aria-expanded="false" aria-controls="${altId}" data-target="${altId}">
-              मुख्य खाने की जगह विकल्प देखें
-            </button>
-            <button class="meal-shuffle" type="button" data-day="${day.key}" data-meal="${mealIndex}">
-              इसी खाने को बदलें
-            </button>
-          </div>
-          <div class="alternatives" id="${altId}">
-            <p class="alt-title">ये विकल्प ऊपर लिखे मुख्य खाने की जगह हैं</p>
-            <p class="alt-help">इनमें से सिर्फ एक चुनें। मुख्य खाना और विकल्प दोनों साथ में नहीं खाने हैं।</p>
-            <ul class="alt-list">
-              ${alternatives.map(item => renderAlternative(day.key, mealIndex, item)).join("")}
-            </ul>
-          </div>
-        </article>
-      `;
-    }
-
-    function renderAlternative(dayKey, mealIndex, item) {
-      return `
-        <li>
-          <div class="alt-card">
-            <div class="alt-card-title">${item.dish}</div>
-            <div class="alt-card-note">${item.note}</div>
-            <div class="portion-row">
-              <div class="portion sandhya">
-                <p class="portion-label">Sandhya</p>
-                <div class="portion-text">${item.sandhya}</div>
-              </div>
-              <div class="portion arun">
-                <p class="portion-label">Arun</p>
-                <div class="portion-text">${item.arun}</div>
-              </div>
-            </div>
-            <button class="choose-alt" type="button" data-day="${dayKey}" data-meal="${mealIndex}" data-item="${item.id}">
-              इसे मुख्य खाना बनाएं
-            </button>
-          </div>
-        </li>
-      `;
-    }
-
-    function renderProteinOptions() {
-      const grid = document.getElementById("proteinGrid");
-      grid.innerHTML = proteinOptions.map(item => `
-        <article class="protein-card">
-          <h3 class="protein-title">${item.title}</h3>
-          <div class="portion-row">
-            <div class="portion sandhya">
-              <p class="portion-label">Sandhya</p>
-              <div class="portion-text">${item.sandhya}</div>
-            </div>
-            <div class="portion arun">
-              <p class="portion-label">Arun</p>
-              <div class="portion-text">${item.arun}</div>
-            </div>
-          </div>
-          <p class="protein-note">${item.note}</p>
-        </article>
-      `).join("");
-    }
-
-    function bindAlternativeButtons() {
-      if (window.mealPlanButtonsBound) return;
-      window.mealPlanButtonsBound = true;
-      document.addEventListener("click", event => {
-        const weeklyShuffle = event.target.closest("#shuffleWeek");
-        if (weeklyShuffle) {
-          shuffleWholeWeek();
-          return;
+    },
+    {
+      key: 'tue', hi: 'मंगलवार', en: 'Tuesday',
+      meals: [
+        {
+          icon: '🌅', hi: 'नाश्ता', en: 'Breakfast', time: 'सुबह 8–9 बजे',
+          desc: 'बेसन का चीला (2) + पुदीने की चटनी + दही',
+          mom: 'चटनी में सामान्य नमक',
+          dad: 'चटनी में बहुत कम नमक'
+        },
+        {
+          icon: '☀️', hi: 'दोपहर का खाना', en: 'Lunch', time: '1–2 बजे',
+          desc: '🍗 चिकन करी (हल्की ग्रेवी) + 2 रोटी + कचूमर सलाद + दही',
+          mom: 'चिकन: 100 ग्राम',
+          dad: 'चिकन: 70 ग्राम, ग्रेवी कम'
+        },
+        {
+          icon: '🍵', hi: 'शाम का नाश्ता', en: 'Snack', time: 'शाम 5 बजे',
+          desc: 'चाय + 1 सेब',
+          mom: '1 पूरा सेब',
+          dad: '1 पूरा सेब'
+        },
+        {
+          icon: '🌙', hi: 'रात का खाना', en: 'Dinner', time: '7–8 बजे',
+          desc: 'मिक्स वेज (लौकी-तोरी) + 2 रोटी + दाल',
+          mom: 'दाल: 1 कटोरी',
+          dad: 'दाल: ½ कटोरी'
         }
-
-        const reset = event.target.closest("#resetPlan");
-        if (reset) {
-          resetPlan();
-          return;
+      ]
+    },
+    {
+      key: 'wed', hi: 'बुधवार', en: 'Wednesday',
+      meals: [
+        {
+          icon: '🌅', hi: 'नाश्ता', en: 'Breakfast', time: 'सुबह 8–9 बजे',
+          desc: 'नमकीन दलिया (सब्ज़ी वाला) + दही',
+          mom: 'सामान्य नमक',
+          dad: 'बहुत कम नमक'
+        },
+        {
+          icon: '☀️', hi: 'दोपहर का खाना', en: 'Lunch', time: '1–2 बजे',
+          desc: 'राजमा + ½ कटोरी चावल + सलाद + दही',
+          mom: 'राजमा: 1 कटोरी',
+          dad: 'राजमा: ½ कटोरी (भिगोकर, पानी बदलकर)'
+        },
+        {
+          icon: '🍵', hi: 'शाम का नाश्ता', en: 'Snack', time: 'शाम 5 बजे',
+          desc: 'चाय + भुना मखाना (मुट्ठी भर)',
+          mom: 'मखाना बिना नमक',
+          dad: 'मखाना बिना नमक'
+        },
+        {
+          icon: '🌙', hi: 'रात का खाना', en: 'Dinner', time: '7–8 बजे',
+          desc: 'पालक-पनीर + 2 फुल्का',
+          mom: 'पालक-पनीर सामान्य',
+          dad: 'लौकी-पनीर (पालक कम)'
         }
-
-        const mealShuffle = event.target.closest(".meal-shuffle");
-        if (mealShuffle) {
-          shuffleMeal(mealShuffle.dataset.day, Number(mealShuffle.dataset.meal));
-          return;
+      ]
+    },
+    {
+      key: 'thu', hi: 'गुरुवार', en: 'Thursday',
+      meals: [
+        {
+          icon: '🌅', hi: 'नाश्ता', en: 'Breakfast', time: 'सुबह 8–9 बजे',
+          desc: 'अंडे का ऑमलेट + 1 रोटी',
+          mom: '2 अंडे का ऑमलेट (1 पूरा + 1 सफ़ेदी)',
+          dad: 'सिर्फ़ 2 अंडे की सफ़ेदी का ऑमलेट'
+        },
+        {
+          icon: '☀️', hi: 'दोपहर का खाना', en: 'Lunch', time: '1–2 बजे',
+          desc: '🐟 मछली करी (रोहू, हल्की) + 2 रोटी + भिंडी + सलाद',
+          mom: 'मछली: 100 ग्राम',
+          dad: 'मछली: 70 ग्राम'
+        },
+        {
+          icon: '🍵', hi: 'शाम का नाश्ता', en: 'Snack', time: 'शाम 5 बजे',
+          desc: 'चाय + 1 नाशपाती',
+          mom: '1 पूरी नाशपाती',
+          dad: '1 पूरी नाशपाती'
+        },
+        {
+          icon: '🌙', hi: 'रात का खाना', en: 'Dinner', time: '7–8 बजे',
+          desc: 'मूंग-मसूर की खिचड़ी + दही + सलाद',
+          mom: '1 कटोरी खिचड़ी',
+          dad: '¾ कटोरी खिचड़ी (कम नमक)'
         }
-
-        const chooseAlt = event.target.closest(".choose-alt");
-        if (chooseAlt) {
-          chooseMeal(chooseAlt.dataset.day, Number(chooseAlt.dataset.meal), chooseAlt.dataset.item);
-          return;
+      ]
+    },
+    {
+      key: 'fri', hi: 'शुक्रवार', en: 'Friday',
+      meals: [
+        {
+          icon: '🌅', hi: 'नाश्ता', en: 'Breakfast', time: 'सुबह 8–9 बजे',
+          desc: 'पोहा (कम तेल, कम नमक) + दही',
+          mom: '1 प्लेट',
+          dad: '1 प्लेट, कम नमक'
+        },
+        {
+          icon: '☀️', hi: 'दोपहर का खाना', en: 'Lunch', time: '1–2 बजे',
+          desc: 'अरहर दाल + जीरा आलू + 2 रोटी + सलाद',
+          mom: 'दाल 1 कटोरी + आलू सामान्य',
+          dad: 'दाल ½ कटोरी + आलू पहले उबालकर पानी फेंक दें'
+        },
+        {
+          icon: '🍵', hi: 'शाम का नाश्ता', en: 'Snack', time: 'शाम 5 बजे',
+          desc: 'चाय + हल्का नाश्ता',
+          mom: '2 अखरोट के टुकड़े',
+          dad: 'खीरा-गाजर की स्टिक्स'
+        },
+        {
+          icon: '🌙', hi: 'रात का खाना', en: 'Dinner', time: '7–8 बजे',
+          desc: 'पनीर टिक्का (तवे पर, सूखा) + 1 रोटी + सलाद',
+          mom: 'पनीर: 50 ग्राम',
+          dad: 'पनीर: 30 ग्राम'
         }
-
-        const button = event.target.closest(".alt-toggle");
-        if (!button) return;
-        const target = document.getElementById(button.dataset.target);
-        const willOpen = !target.classList.contains("show");
-        target.classList.toggle("show", willOpen);
-        button.setAttribute("aria-expanded", String(willOpen));
-        button.textContent = willOpen ? "विकल्प छुपाएं" : "मुख्य खाने की जगह विकल्प देखें";
-      });
+      ]
+    },
+    {
+      key: 'sat', hi: 'शनिवार', en: 'Saturday',
+      meals: [
+        {
+          icon: '🌅', hi: 'नाश्ता', en: 'Breakfast', time: 'सुबह 8–9 बजे',
+          desc: 'उबले अंडे + 1 रोटी',
+          mom: '2 पूरे अंडे + 1 रोटी',
+          dad: '1 पूरा + 1 सफ़ेदी + 1 रोटी'
+        },
+        {
+          icon: '☀️', hi: 'दोपहर का खाना', en: 'Lunch', time: '1–2 बजे',
+          desc: '🍗 तंदूरी / ग्रिल्ड चिकन + 2 रोटी + गोभी-मटर + सलाद + दही',
+          mom: 'चिकन: 100 ग्राम',
+          dad: 'चिकन: 70 ग्राम (बिना खाल)'
+        },
+        {
+          icon: '🍵', hi: 'शाम का नाश्ता', en: 'Snack', time: 'शाम 5 बजे',
+          desc: 'चाय + 1 अमरूद',
+          mom: '1 पूरा अमरूद',
+          dad: '1 पूरा अमरूद'
+        },
+        {
+          icon: '🌙', hi: 'रात का खाना', en: 'Dinner', time: '7–8 बजे',
+          desc: 'सब्ज़ी का सूप + 1 बेसन चीला + सलाद',
+          mom: 'सूप सामान्य नमक',
+          dad: 'सूप बहुत कम नमक (मैगी क्यूब नहीं)'
+        }
+      ]
+    },
+    {
+      key: 'sun', hi: 'रविवार', en: 'Sunday',
+      meals: [
+        {
+          icon: '🌅', hi: 'नाश्ता', en: 'Breakfast', time: 'सुबह 8–9 बजे',
+          desc: '2 इडली + सांबर (कम नमक) + नारियल चटनी (थोड़ी)',
+          mom: '2 इडली + सांबर',
+          dad: '2 इडली + कम नमक सांबर + चटनी बहुत थोड़ी'
+        },
+        {
+          icon: '☀️', hi: 'दोपहर का खाना', en: 'Lunch', time: '1–2 बजे',
+          desc: 'वेज पुलाव (छोटी कटोरी) + छोले / राजमा + रायता + सलाद',
+          mom: 'छोले: 1 कटोरी + पुलाव सामान्य',
+          dad: 'छोले: ½ कटोरी + पुलाव आधा'
+        },
+        {
+          icon: '🍵', hi: 'शाम का नाश्ता', en: 'Snack', time: 'शाम 5 बजे',
+          desc: 'चाय + पपीता',
+          mom: '1 कटोरी पपीता',
+          dad: '1 कटोरी पपीता'
+        },
+        {
+          icon: '🌙', hi: 'रात का खाना', en: 'Dinner', time: '7–8 बजे',
+          desc: 'दाल खिचड़ी + दही',
+          mom: '1 कटोरी',
+          dad: '¾ कटोरी, कम नमक'
+        }
+      ]
     }
-  </script>
+  ];
+
+  const dayKeys = ['sun','mon','tue','wed','thu','fri','sat'];
+  const today = new Date();
+  const todayKey = dayKeys[today.getDay()];
+
+  const dayNamesHi = ['रविवार','सोमवार','मंगलवार','बुधवार','गुरुवार','शुक्रवार','शनिवार'];
+  const monthsHi = ['जनवरी','फ़रवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितंबर','अक्टूबर','नवंबर','दिसंबर'];
+
+  document.getElementById('todayDay').textContent = dayNamesHi[today.getDay()];
+  document.getElementById('todayDate').textContent =
+    today.getDate() + ' ' + monthsHi[today.getMonth()] + ' ' + today.getFullYear();
+
+  const dayList = document.getElementById('dayList');
+
+  // Reorder so today comes first
+  const orderedDays = [...days];
+  const todayIndex = orderedDays.findIndex(d => d.key === todayKey);
+  const reordered = todayIndex >= 0
+    ? [...orderedDays.slice(todayIndex), ...orderedDays.slice(0, todayIndex)]
+    : orderedDays;
+
+  reordered.forEach((day, idx) => {
+    const isToday = day.key === todayKey;
+    const details = document.createElement('details');
+    details.className = 'day' + (isToday ? ' today' : '');
+    if (isToday) details.open = true;
+
+    const summary = document.createElement('summary');
+    summary.innerHTML =
+      '<span>' + day.hi + '</span>' +
+      '<span class="day-label-en">' + day.en + (isToday ? ' &middot; आज' : '') + '</span>';
+    details.appendChild(summary);
+
+    const body = document.createElement('div');
+    body.className = 'day-body';
+
+    day.meals.forEach(m => {
+      const meal = document.createElement('div');
+      meal.className = 'meal';
+      meal.innerHTML =
+        '<div class="meal-title">' +
+          '<span class="meal-icon">' + m.icon + '</span>' +
+          '<span>' + m.hi + '</span>' +
+          '<span class="meal-time">&middot; ' + m.time + '</span>' +
+        '</div>' +
+        '<div class="meal-desc">' + m.desc + '</div>' +
+        '<div class="portions">' +
+          '<div class="portion mom"><span class="who">माँ के लिए</span>' + m.mom + '</div>' +
+          '<div class="portion dad"><span class="who">पापा के लिए</span>' + m.dad + '</div>' +
+        '</div>';
+      body.appendChild(meal);
+    });
+
+    details.appendChild(body);
+    dayList.appendChild(details);
+  });
+</script>
+
 </body>
 </html>
