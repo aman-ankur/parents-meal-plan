@@ -213,29 +213,37 @@
 
     .utility-grid {
       display: grid;
-      gap: 12px;
-      margin: 18px 0 8px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin: 12px 0 8px;
     }
 
     .utility {
       border: 2px solid var(--line);
-      border-radius: 22px;
+      border-radius: 16px;
       background: #fff;
       overflow: clip;
-      box-shadow: 0 8px 22px rgba(87, 83, 78, 0.07);
+      box-shadow: 0 6px 14px rgba(87, 83, 78, 0.06);
+    }
+
+    .utility[open] {
+      grid-column: 1 / -1;
     }
 
     .utility summary {
-      min-height: 68px;
+      min-height: 58px;
       display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
+      grid-template-columns: 1fr;
+      gap: 6px;
       align-items: center;
-      padding: 16px;
+      justify-items: center;
+      padding: 10px 8px;
       color: var(--saddle);
       cursor: pointer;
       list-style: none;
-      font-size: 23px;
+      text-align: center;
+      font-size: 16px;
+      line-height: 1.1;
       font-weight: 950;
     }
 
@@ -245,6 +253,7 @@
     }
 
     .summary-caption {
+      display: none;
       margin-top: 4px;
       color: var(--muted);
       font-size: 16px;
@@ -253,6 +262,30 @@
     }
 
     .utility summary::-webkit-details-marker { display: none; }
+
+    .utility summary .chevron {
+      width: 30px;
+      height: 30px;
+      font-size: 20px;
+    }
+
+    .utility[open] summary {
+      grid-template-columns: 1fr auto;
+      justify-items: stretch;
+      text-align: left;
+      padding: 14px;
+      font-size: 22px;
+    }
+
+    .utility[open] .summary-caption {
+      display: block;
+    }
+
+    .utility[open] summary .chevron {
+      width: 44px;
+      height: 44px;
+      font-size: 28px;
+    }
 
     .utility-body {
       padding: 0 16px 16px;
@@ -940,7 +973,7 @@
       <details class="utility" id="cookMode">
         <summary>
           <span>
-            <span class="summary-title">Cook को आज क्या बनाना है</span>
+            <span class="summary-title">Cook</span>
             <span class="summary-caption">आज के 4 खाने की छोटी list</span>
           </span>
           <span class="chevron" aria-hidden="true">⌄</span>
@@ -951,7 +984,7 @@
       <details class="utility" id="emergencyMeals">
         <summary>
           <span>
-            <span class="summary-title">Emergency आसान खाना</span>
+            <span class="summary-title">Emergency</span>
             <span class="summary-caption">जब cook न आए या सब्जी कम हो</span>
           </span>
           <span class="chevron" aria-hidden="true">⌄</span>
@@ -968,7 +1001,10 @@
 
       <details class="utility wide" id="groceryList">
         <summary>
-          इस हफ्ते की खरीदारी
+          <span>
+            <span class="summary-title">खरीदारी</span>
+            <span class="summary-caption">इस हफ्ते की shopping list</span>
+          </span>
           <span class="chevron" aria-hidden="true">⌄</span>
         </summary>
         <div class="utility-body" id="groceryBody"></div>
